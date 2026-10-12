@@ -1,29 +1,45 @@
 ---
 name: add-doc
-description: 为代码添加或完善文档和注释。未指定文件时，处理所有未提交代码；指定文件时，仅处理指定文件。
+description: Add or improve code documentation and comments. If no files are specified, process all uncommitted code changes; otherwise, process only the specified files.
 ---
 
 # add-doc
 
-## 目标
+## Goal
 
-为代码补充清晰、准确、简洁的文档，不改变现有业务逻辑。
+Add clear, accurate, and concise documentation to code without changing existing business logic.
 
-1. 文件范围 未指定文件：检查 Git 工作区中所有未提交的代码变更，包括已暂存和未暂存的修改。 指定文件：仅处理用户明确指定的文件，不扩展到其他文件。
-   保留用户已有的修改，不覆盖、撤销或丢弃任何未提交内容。 不修改与文档任务无关的代码或文件。
-2. 执行步骤 确认需要处理的文件范围。 阅读相关代码，理解实际功能和逻辑。 遵循项目现有规范，补充或更新文档。
-   检查文档的准确性、简洁性及其与代码实现的一致性。 检查最终变更，确保没有无关修改。
-3. 编写规范 优先更新现有文档，避免重复创建。 重点说明功能、参数、返回值、异常及复杂逻辑。 遵循项目现有的语言、注释和文档格式。
-   不编造代码行为，不添加冗余注释。 不修改业务逻辑、接口行为或无关文件。
+## 1. File Scope
 
-4. 输出要求
+- If no files are specified, inspect all uncommitted code changes in the Git working tree, including staged and unstaged changes.
+- If files are specified, process only the files explicitly selected by the user. Do not expand the scope to other files.
+- Preserve the user's existing changes. Do not overwrite, revert, or discard any uncommitted content.
+- Do not modify code or files unrelated to the documentation task.
 
-完成后简要说明：
+## 2. Workflow
 
-- 修改了哪些文件。
-- 补充或完善了哪些文档内容。
-- 执行了哪些检查及其结果。
+1. Confirm the scope of files to process.
+2. Read the relevant code to understand its actual functionality and logic.
+3. Add or update documentation following the project's existing conventions.
+4. Check that the documentation is accurate, concise, and consistent with the implementation.
+5. Review the final changes to ensure there are no unrelated modifications.
 
-5. 核心原则
+## 3. Writing Guidelines
 
-范围明确、文档准确、修改最小化、不影响现有代码行为。
+- Prefer updating existing documentation over creating duplicate documentation.
+- Focus on functionality, parameters, return values, exceptions, and complex logic.
+- Follow the project's existing language, comment style, and documentation format.
+- Do not invent code behavior or add redundant comments.
+- Do not change business logic, interface behavior, or unrelated files.
+
+## 4. Output Requirements
+
+After completion, briefly describe:
+
+- Which files were modified.
+- What documentation was added or improved.
+- Which checks were performed and their results.
+
+## 5. Core Principles
+
+Keep the scope clear, documentation accurate, and changes minimal. Preserve existing code behavior.
