@@ -1,0 +1,125 @@
+---
+name: code-like-me
+description: Preserve personal coding style when implementing, modifying, or refactoring code. General rules cover responsibilities, design patterns, naming, and logic organization; Java rules add Lombok, enums, collections, data access, and Javadoc. Follow the target project's conventions and neighboring implementations.
+---
+
+# code-like-me
+
+## Goal
+
+Think and organize code like me: keep responsibilities clear, names intuitive, and reuse existing abstractions and tools so code remains easy to read, modify, and extend.
+
+Complete the requested implementation and necessary verification; when asked only for analysis or advice, stay within that scope.
+
+## 1. Rule Priority and Scope
+
+- Priority: explicit task requirements → project conventions → well-maintained neighboring implementations in the same module → this skill's preferences. Always preserve correctness and interface compatibility.
+- Apply general rules idiomatically in all languages. Apply a language section in addition only when using that language; follow project conventions for languages not listed.
+- Follow local conventions in existing projects; design new modules for their requirements rather than copying reference package names, frameworks, or domain models.
+- Infer personal habits from multiple consistent implementations, not isolated cases, generated code, or other authors' code. Quality rules are constraints, not claims that all historical code satisfies them.
+- Preserve the user's changes and modify only necessary files. Do not expand scope, format the entire project, upgrade dependencies, or refactor unrelated modules merely to unify style.
+
+## 2. Workflow
+
+1. **Define scope**: Identify requirements, interfaces, compatibility constraints, and existing changes. Ask only when missing information affects business behavior and cannot be resolved from context.
+2. **Read context**: Inspect project instructions, build and language versions, structure, relevant callers, implementations, and tests. Review two or three similar implementations in the same module to confirm naming, declaration metadata, exceptions, response structures, and data access conventions. Syntax and APIs must support the target version.
+3. **Choose an implementation**: Reuse types, interfaces, and utilities before adding abstractions. Identify stable steps and variation points in complex flows; implement simple requirements directly.
+4. **Make changes**: Organize logic by responsibility, keep methods or functions short and semantically complete, and implement boundary validation and failure handling alongside the main logic.
+5. **Verify and review**: Choose compilation, static checks, existing tests, or focused new tests according to impact, covering branches, states, and boundaries. Review the diff using the final checklist before delivery.
+
+## 3. General Coding Rules
+
+### Design Principles and Patterns
+
+- Follow SOLID, the Law of Demeter, and the composition/reuse principle. Keep responsibilities clear, interfaces focused, dependencies appropriate, and coupling to internal structures low.
+- Prefer composition, delegation, and component reuse. Use inheritance for genuine substitutability or stable template flows, not solely to reuse a few lines of code.
+- Honor interface contracts without tightening input conditions or silently changing return, exception, or side-effect semantics. Use the project's injection approach for container-managed dependencies.
+- Use design patterns where helpful, especially in complex scenarios. Select them according to responsibilities, variation points, object creation, structure, and collaboration needs, without restricting the pattern or domain.
+- Identify the problem and benefit before introducing abstractions. Keep simple, stable logic direct; add structure for clear extension or isolation needs while considering readability and maintenance cost.
+- Prefer existing extension mechanisms; interfaces, functions, and delegation can also express a pattern's intent. Do not add layers merely to apply a named pattern.
+- When combining patterns, clarify their responsibilities and check dependency direction, resource ownership, lifecycle, ordering, concurrency, and failure propagation. Verify that substitution, extension, and failure behavior honor contracts.
+
+### Naming and Logic Organization
+
+- Names of types, methods, functions, and variables should express domain concepts and purpose. Follow the project's English naming, abbreviations, and type suffixes.
+- Method or function names should identify actions and objects; follow project boolean naming conventions. Distinguish queries, conversions, validation, and execution; names must not conceal writes or external calls.
+- Main flows should show the steps, with checks and conversions extracted into meaningful methods or functions. Keep coherent local logic together rather than creating many one-line wrappers.
+- Use early returns for preconditions, no-op cases, and failure branches to reduce nesting, while preserving return contracts.
+- Put repeated business rules in their owning domain or services. Reserve utility modules for stateless capabilities shared across domains.
+- Use constants, enums, or idiomatic language types for meaningful fixed values; do not mechanically extract literals that occur once and are already clear.
+
+### Data and State Modeling
+
+- Data objects hold data and necessary local behavior; services orchestrate business logic. Follow layering conventions for entities and external contracts.
+- Model finite, stable types, states, and operations centrally to reduce scattered values and repeated branches. Put reusable code lookup, description retrieval, and predicates in their owning types or conversion components.
+- Define return, default, or exception contracts for null and unknown codes; do not silently treat them as valid states. Use stable codes in interfaces, persistence, and messages; do not arbitrarily change published codes.
+- State types may encapsulate simple behavior tied to their attributes. Put complex behavior involving services, databases, or external calls in strategies or business components.
+
+### Validation, Exceptions, and Logging
+
+- Validate formats and required fields at entry points, and existence, permissions, states, and business constraints in services. Follow established boundaries and avoid duplication.
+- Reuse validation tools, business exceptions, and error codes. Explain the business cause without exposing stack traces or internal details to callers.
+- Catch exceptions only to recover, add context, or translate their semantics; otherwise use centralized handling. Do not hide failures behind empty collections, null values, or success results; handle permitted absence according to the contract.
+- Follow logging frameworks and levels. Use parameterized logs for key changes, external failures, and diagnostic context; avoid meaningless high-frequency output.
+- Retain business identifiers on frequent paths. Check the logging level before serialization or expensive computation. Avoid duplicate exception logs, retain stack traces when logging at the current layer, and omit credentials, tokens, and complete sensitive objects.
+
+### Collections, Conversion, and Data Access
+
+- Prefer existing collection, string, conversion, and data access utilities. Do not add dependencies when the standard library suffices.
+- Use clear, idiomatic constructs for filtering, mapping, and grouping; prefer loops for complex branches, side effects, or early termination.
+- Define semantics for empty collections, null elements, duplicate keys, and ordering. Use domain-specific conflict policies when merging data rather than arbitrarily retaining one entry.
+- Specify numeric defaults, precision, rounding, and comparison semantics; do not rely on implicit utility behavior or treat zero as missing without domain justification.
+- Follow existing conversion and field mapping approaches. Check required fields, types, and meaning; do not let generic copying obscure differences.
+- Reuse data access components or service queries and avoid querying each item in a loop. Consider batch size and transaction semantics.
+- Define transaction boundaries by business atomicity and honor framework transaction and rollback rules. Follow existing compensation mechanisms for external calls, caches, and messages.
+- When maintaining caches after database writes, check and reuse after-commit callbacks to avoid cache changes surviving a rollback. Define behavior without a transaction and when callbacks fail.
+- Cache repeated intermediate results on hot paths when they can be reliably invalidated. Prefer existing components and define keys, lifecycle, invalidation after writes, and concurrency semantics; do not copy capacities or TTLs blindly.
+- Define the scope and repeat-execution behavior of updates, deletes, and batches. Retain necessary conditions, result checks, and concurrency controls.
+
+### Comments and Formatting
+
+- Follow indentation, imports, line breaks, declaration metadata ordering, and comment language; use existing formatting tools.
+- Chinese business comments should explain intent, constraints, algorithm steps, and tradeoffs, not translate code line by line. Document actual parameters, returns, and exceptions for public capabilities, complex methods or functions, and key fields as the project requires.
+- Place documentation comments where the language and documentation tools require, and local explanations near the implementation. Update comments when behavior changes; do not invent authors, dates, performance guarantees, or unimplemented capabilities.
+
+## 4. Language-Specific Rules
+
+### Java
+
+Apply these rules only to Java. Rules for Lombok, MyBatis-Plus, and similar dependencies apply only when the project already uses them.
+
+#### Lombok and Object Modeling
+
+- Use Lombok to simplify ordinary beans, request/response and configuration objects, and enums. Select getter, setter, constructor, builder, and logging annotations as needed.
+- Follow the `@Data` style for mutable beans; expose only read access for read-only objects. Check generated `equals`, `hashCode`, and `toString`; explicitly control inheritance, entity associations, and sensitive fields to prevent recursion or disclosure.
+- Constructor annotations must meet framework instantiation requirements. Use `@Builder` only when it improves construction readability, not as a substitute for required-field validation or a default for every class.
+- Follow the module's injection style; without an existing convention and when Lombok is used, consider `@RequiredArgsConstructor` with `private final`. Do not replace injection styles throughout existing code.
+- Simple, stable response conversions may use `static of(...)` with explicit field mappings. Prefer an existing shared conversion component when available.
+- Reuse common entity base fields and table mapping conventions. Before using `@EqualsAndHashCode(callSuper = true)`, confirm superclass fields belong in equality checks; do not apply it universally.
+
+#### Enums and Naming
+
+- Use enums for finite, stable types, states, and operations. Maintain fixed attributes such as codes and descriptions through fields and constructors.
+- When Lombok is used, consider `@Getter`, `@AllArgsConstructor`, and `private final` attributes. Follow project naming, code types, and dictionary annotations; do not mandate an `Enum` suffix, `Integer`, or constructor annotations.
+- Do not use `ordinal()` for external codes; follow project boolean naming conventions such as `is`, `has`, and `can`.
+
+#### Collections, Numbers, and Data Access
+
+- Use streams for clear filtering, mapping, and grouping. Simple nullable conversions may use `Optional`, and reusable conversions may accept a `Function`; keep them readable.
+- Use `BigDecimal` as required by the domain: compare numeric values with `compareTo`, and use `equals` only when both value and scale matter.
+- Define domain-specific duplicate-key policies for operations such as `Collectors.toMap`.
+- Reuse Mapper, Repository, or service queries. Where MyBatis-Plus is already used, consider `LambdaQueryWrapper` and getter method references; do not require introducing the framework.
+- When configuring transactions, check framework proxy activation conditions and rollback rules.
+
+#### Javadoc
+
+- Place Javadoc for classes, methods, constructors, and fields above the declaration's entire annotation block, or directly above the declaration when there are no annotations. Do not insert it between annotations or between annotations and the declaration.
+
+## 5. Final Review and Delivery
+
+- [ ] Requirements are complete, interfaces and business constraints are preserved, user changes remain intact, and there are no unrelated changes or unnecessary code.
+- [ ] Responsibilities, reuse, and abstractions are appropriate; naming, declaration metadata, injection, exceptions, and response structures follow module conventions. Applicable language-specific rules have been applied.
+- [ ] Nulls, collections, duplicates, unknown states, and failure paths honor contracts. For persistence or external interactions, check query cost, transactions, update conditions, and failure handling.
+- [ ] Comments match implementation, no sensitive logging was added, and verification matches the change. Report checks that were not run or could not be run accurately.
+
+Briefly report changes and verification results. Explain only key tradeoffs affecting use or maintenance; do not restate the skill's rules.
