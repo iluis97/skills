@@ -1,6 +1,6 @@
 ---
 name: code-like-me
-description: Preserve personal coding style when implementing, modifying, or refactoring code. General rules cover responsibilities, design patterns, naming, and logic organization; Java rules add Lombok, enums, collections, data access, and Javadoc. Follow the target project's conventions and neighboring implementations.
+description: Apply personal coding preferences when implementing, modifying, or refactoring code. Emphasize clear responsibilities, readable main flows, composition, and reuse while following the target project's conventions. Includes Java-specific guidance.
 ---
 
 # code-like-me
@@ -22,7 +22,7 @@ Complete the requested implementation and necessary verification; when asked onl
 ## 2. Workflow
 
 1. **Define scope**: Identify requirements, interfaces, compatibility constraints, and existing changes. Ask only when missing information affects business behavior and cannot be resolved from context.
-2. **Read context**: Inspect project instructions, build and language versions, structure, relevant callers, implementations, and tests. Review two or three similar implementations in the same module to confirm naming, declaration metadata, exceptions, response structures, and data access conventions. Syntax and APIs must support the target version.
+2. **Read context**: Inspect project instructions, build and language versions, structure, relevant callers, implementations, and tests. When available, sample two or three similar implementations in the same module to confirm conventions relevant to the task; scale exploration to the change. Syntax and APIs must support the target version.
 3. **Choose an implementation**: Reuse types, interfaces, and utilities before adding abstractions. Identify stable steps and variation points in complex flows; implement simple requirements directly.
 4. **Make changes**: Organize logic by responsibility, keep methods or functions short and semantically complete, and implement boundary validation and failure handling alongside the main logic.
 5. **Verify and review**: Choose compilation, static checks, existing tests, or focused new tests according to impact, covering branches, states, and boundaries. Review the diff using the final checklist before delivery.
@@ -31,13 +31,9 @@ Complete the requested implementation and necessary verification; when asked onl
 
 ### Design Principles and Patterns
 
-- Follow SOLID, the Law of Demeter, and the composition/reuse principle. Keep responsibilities clear, interfaces focused, dependencies appropriate, and coupling to internal structures low.
-- Prefer composition, delegation, and component reuse. Use inheritance for genuine substitutability or stable template flows, not solely to reuse a few lines of code.
-- Honor interface contracts without tightening input conditions or silently changing return, exception, or side-effect semantics. Use the project's injection approach for container-managed dependencies.
-- Use design patterns where helpful, especially in complex scenarios. Select them according to responsibilities, variation points, object creation, structure, and collaboration needs, without restricting the pattern or domain.
-- Identify the problem and benefit before introducing abstractions. Keep simple, stable logic direct; add structure for clear extension or isolation needs while considering readability and maintenance cost.
-- Prefer existing extension mechanisms; interfaces, functions, and delegation can also express a pattern's intent. Do not add layers merely to apply a named pattern.
-- When combining patterns, clarify their responsibilities and check dependency direction, resource ownership, lifecycle, ordering, concurrency, and failure propagation. Verify that substitution, extension, and failure behavior honor contracts.
+- **Responsibilities and contracts**: Apply SOLID and the Law of Demeter to keep responsibilities clear, interfaces focused, and coupling low. Do not tighten interface input conditions or silently change return, exception, or side-effect semantics. Follow the project's injection approach for container-managed dependencies.
+- **Reuse and abstraction**: Prefer existing components and extension mechanisms, composition, and delegation. Use inheritance for genuine substitutability or stable template flows. Introduce patterns or abstractions for identifiable variation, extension, or isolation needs; keep simple logic direct and avoid layers whose maintenance cost outweighs their benefit.
+- **Component collaboration**: In complex flows, check dependency direction, resource ownership, lifecycle, ordering, concurrency, and failure propagation. Verify that substitution and extension preserve contracts.
 
 ### Naming and Logic Organization
 
@@ -97,19 +93,18 @@ Apply these rules only to Java. Rules for Lombok, MyBatis-Plus, and similar depe
 - Simple, stable response conversions may use `static of(...)` with explicit field mappings. Prefer an existing shared conversion component when available.
 - Reuse common entity base fields and table mapping conventions. Before using `@EqualsAndHashCode(callSuper = true)`, confirm superclass fields belong in equality checks; do not apply it universally.
 
-#### Enums and Naming
+#### Enums
 
-- Use enums for finite, stable types, states, and operations. Maintain fixed attributes such as codes and descriptions through fields and constructors.
+- Store enum codes and descriptions in fields initialized by constructors. Never use `ordinal()` for external codes.
 - When Lombok is used, consider `@Getter`, `@AllArgsConstructor`, and `private final` attributes. Follow project naming, code types, and dictionary annotations; do not mandate an `Enum` suffix, `Integer`, or constructor annotations.
-- Do not use `ordinal()` for external codes; follow project boolean naming conventions such as `is`, `has`, and `can`.
 
 #### Collections, Numbers, and Data Access
 
 - Use streams for clear filtering, mapping, and grouping. Simple nullable conversions may use `Optional`, and reusable conversions may accept a `Function`; keep them readable.
 - Use `BigDecimal` as required by the domain: compare numeric values with `compareTo`, and use `equals` only when both value and scale matter.
-- Define domain-specific duplicate-key policies for operations such as `Collectors.toMap`.
-- Reuse Mapper, Repository, or service queries. Where MyBatis-Plus is already used, consider `LambdaQueryWrapper` and getter method references; do not require introducing the framework.
-- When configuring transactions, check framework proxy activation conditions and rollback rules.
+- `Collectors.toMap` without a merge function throws on duplicate keys; where duplicates are valid, provide a merge function implementing the domain policy.
+- Where MyBatis-Plus is already used, consider `LambdaQueryWrapper` and getter method references.
+- For proxy-based transactions, verify that calls pass through the proxy and that the configured rollback rules cover the intended exception types.
 
 #### Javadoc
 
@@ -117,9 +112,7 @@ Apply these rules only to Java. Rules for Lombok, MyBatis-Plus, and similar depe
 
 ## 5. Final Review and Delivery
 
-- [ ] Requirements are complete, interfaces and business constraints are preserved, user changes remain intact, and there are no unrelated changes or unnecessary code.
-- [ ] Responsibilities, reuse, and abstractions are appropriate; naming, declaration metadata, injection, exceptions, and response structures follow module conventions. Applicable language-specific rules have been applied.
-- [ ] Nulls, collections, duplicates, unknown states, and failure paths honor contracts. For persistence or external interactions, check query cost, transactions, update conditions, and failure handling.
-- [ ] Comments match implementation, no sensitive logging was added, and verification matches the change. Report checks that were not run or could not be run accurately.
+- [ ] The diff fulfills the requested scope and applicable conventions, with no unintended changes to behavior or user edits.
+- [ ] Verification covers the affected contracts, boundaries, and failure paths; comments match the final implementation.
 
-Briefly report changes and verification results. Explain only key tradeoffs affecting use or maintenance; do not restate the skill's rules.
+Briefly report changes, verification results, and relevant checks not run or blocked. Explain only key tradeoffs affecting use or maintenance; do not restate the skill's rules.
