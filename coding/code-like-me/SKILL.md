@@ -75,6 +75,7 @@ Complete the requested implementation and necessary verification; when asked onl
 ### Comments and Formatting
 
 - Follow indentation, imports, line breaks, declaration metadata ordering, and comment language; use existing formatting tools.
+- Reference classes via imports; do not use fully qualified class names inline. Use a fully qualified name only when same-named classes conflict or an import would be ambiguous, keeping such usages consistent within the file.
 - Chinese business comments should explain intent, constraints, algorithm steps, and tradeoffs, not translate code line by line. Document actual parameters, returns, and exceptions for public capabilities, complex methods or functions, and key fields as the project requires.
 - Place documentation comments where the language and documentation tools require, and local explanations near the implementation. Update comments when behavior changes; do not invent authors, dates, performance guarantees, or unimplemented capabilities.
 
