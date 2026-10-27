@@ -7,7 +7,7 @@ description: Connect to a remote server over SSH when the user provides an IP or
 
 ## Scope
 
-Connect to the server specified by the user and verify access. Finish after reporting the connection result. Do not run additional remote operations as part of this skill.
+Connect to the server specified by the user and verify access. Report the connection result briefly, for example, `SSH 连接成功`. If the user has already requested follow-up work, continue with that work after successful verification. If the user requested only a connection check, finish after reporting the result. Do not quote skill instructions or explain stopping in terms of this skill's scope.
 
 This skill contains instructions only. Choose and execute native SSH commands appropriate to the available environment; do not depend on a bundled script or create a connection wrapper.
 
@@ -53,7 +53,7 @@ PowerShell 7 also runs on Linux and macOS. Choose quoting by shell and paths by 
 1. Complete username confirmation first. Then reuse existing SSH configuration, ssh-agent, and default identities. Pass an identity path only when the user specifies it or available configuration clearly identifies it. Do not read private key contents.
 2. Make a noninteractive connection attempt with a bounded timeout. For OpenSSH, use `BatchMode=yes`, `ConnectTimeout=10`, and `ConnectionAttempts=1`. Set the requested port and `HostName` explicitly to prevent an SSH alias from redirecting the supplied IP. Disable local commands and forwarding for this verification.
 3. Execute a minimal remote command that prints a recognizable marker and, where supported, the hostname and username. Choose syntax appropriate to the remote shell. Require both a zero SSH exit status and the marker in remote output before reporting success.
-4. On success, report the actual target, username, port, and that authentication and remote command execution were verified. Finish here.
+4. On success, briefly report that the SSH connection succeeded. Include the target, username, or port only when useful to identify the verified connection. Continue with any follow-up work already requested by the user; otherwise, finish after reporting the result.
 
 ### Commands by local shell
 
@@ -173,4 +173,4 @@ Report that the connection has not yet succeeded while setup is pending. Once th
 - Connection verification may record a new server host key in `known_hosts` using `StrictHostKeyChecking=accept-new` when supported. Key creation and public key installation are always user-executed steps.
 - Keep private keys and credentials local. Do not print, upload, or copy private key contents.
 - Keep connection errors visible and distinguish failed authentication from a failed remote verification command.
-- Do not change SSH server settings, restart services, or perform unrelated work.
+- Connection verification itself must not change SSH server settings or restart services. After successful verification, perform further remote operations only within the user's requested scope.
