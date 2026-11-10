@@ -1,6 +1,6 @@
 ---
 name: code-like-me
-description: Apply personal coding preferences when implementing, modifying, or refactoring code. Emphasize clear responsibilities, readable main flows, composition, and reuse while following the target project's conventions. Includes Java-specific guidance.
+description: Apply personal coding preferences when implementing, modifying, or refactoring code. Emphasize clear responsibilities, readable main flows, composition, and reuse while following the target project's conventions.
 ---
 
 # code-like-me
@@ -24,23 +24,25 @@ Complete the requested implementation and necessary verification; when asked onl
 1. **Define scope**: Identify requirements, interfaces, compatibility constraints, and existing changes. Ask only when missing information affects business behavior and cannot be resolved from context.
 2. **Read context**: Inspect project instructions, build and language versions, structure, relevant callers, implementations, and tests. When available, sample two or three similar implementations in the same module to confirm conventions relevant to the task; scale exploration to the change. Syntax and APIs must support the target version.
 3. **Choose an implementation**: Reuse types, interfaces, and utilities before adding abstractions. Identify stable steps and variation points in complex flows; implement simple requirements directly.
-4. **Make changes**: Organize logic by responsibility, keep methods or functions short and semantically complete, and implement boundary validation and failure handling alongside the main logic.
+4. **Make changes**: Organize methods or functions around a single responsibility and complete logic; implement necessary boundary validation and failure handling according to contracts.
 5. **Verify and review**: Choose compilation, static checks, existing tests, or focused new tests according to impact, covering branches, states, and boundaries. Review the diff using the final checklist before delivery.
 
 ## 3. General Coding Rules
 
 ### Design Principles and Patterns
 
-- **Responsibilities and contracts**: Apply SOLID and the Law of Demeter to keep responsibilities clear, interfaces focused, and coupling low. Do not tighten interface input conditions or silently change return, exception, or side-effect semantics. Follow the project's injection approach for container-managed dependencies.
-- **Reuse and abstraction**: Prefer existing components and extension mechanisms, composition, and delegation. Use inheritance for genuine substitutability or stable template flows. Introduce patterns or abstractions for identifiable variation, extension, or isolation needs; keep simple logic direct and avoid layers whose maintenance cost outweighs their benefit.
+- **Responsibilities and contracts**: Aim for clear responsibilities, focused interfaces, and low coupling; apply SOLID and the Law of Demeter as needed. Do not tighten interface input conditions or silently change return, exception, or side-effect semantics. Follow the project's injection approach for container-managed dependencies.
+- **Reuse and collaboration**: Prefer existing components and extension mechanisms, composition, and delegation. Use inheritance for genuine substitutability or stable template flows. Follow the design boundaries in the next chapter when adding abstractions.
 - **Component collaboration**: In complex flows, check dependency direction, resource ownership, lifecycle, ordering, concurrency, and failure propagation. Verify that substitution and extension preserve contracts.
 
 ### Naming and Logic Organization
 
 - Names of types, methods, functions, and variables should express domain concepts and purpose. Follow the project's English naming, abbreviations, and type suffixes.
 - Method or function names should identify actions and objects; follow project boolean naming conventions. Distinguish queries, conversions, validation, and execution; names must not conceal writes or external calls.
-- Main flows should show the steps, with checks and conversions extracted into meaningful methods or functions. Keep coherent local logic together rather than creating many one-line wrappers.
-- Use early returns for preconditions, no-op cases, and failure branches to reduce nesting, while preserving return contracts.
+- **Single responsibility, complete logic**: Each method or function should fulfill one clear responsibility through a semantically complete piece of logic. Keep the checks, calculations, and processing belonging to that responsibility coherent; do not mix in unrelated responsibilities.
+- **Extract by meaning**: Main flows should clearly show business steps at a consistent level of abstraction; orchestration methods may coordinate multiple steps that jointly fulfill their responsibility. Extract local logic when it has independent business meaning, offers reuse, or materially improves main-flow readability. Do not split code mechanically to shorten it; avoid calls that merely forward arguments or wrap expressions without independent meaning.
+- **Guard clauses serve the main flow**: Prefer early returns or exceptions for unmet preconditions, legitimate no-op cases, and failure branches so normal processing unfolds sequentially. Decide whether checks are necessary using the defensive programming boundaries in chapter 4.
+- **Explicit exit semantics**: Handle invalid input and business failures according to established exception or error contracts. Return without action only when the contract allows it; do not silently exit instead of reporting failure. Retain clear, simple `if/else` structures, and do not force parallel normal business branches into scattered early returns. Preserve resource cleanup, transactions, and necessary side effects on early exit.
 - Put repeated business rules in their owning domain or services. Reserve utility modules for stateless capabilities shared across domains.
 - Use constants, enums, or idiomatic language types for meaningful fixed values; do not mechanically extract literals that occur once and are already clear.
 
@@ -53,9 +55,9 @@ Complete the requested implementation and necessary verification; when asked onl
 
 ### Validation, Exceptions, and Logging
 
-- Validate formats and required fields at entry points, and existence, permissions, states, and business constraints in services. Follow established boundaries and avoid duplication.
+- Validate formats and required fields at entry points, and existence, permissions, states, and business constraints in services. Follow established responsibility boundaries; use the defensive programming boundaries in the next chapter to decide on validation and fallbacks.
 - Reuse validation tools, business exceptions, and error codes. Explain the business cause without exposing stack traces or internal details to callers.
-- Catch exceptions only to recover, add context, or translate their semantics; otherwise use centralized handling. Do not hide failures behind empty collections, null values, or success results; handle permitted absence according to the contract.
+- Catch exceptions only to recover, add context, or translate their semantics; otherwise use centralized handling.
 - Follow logging frameworks and levels. Use parameterized logs for key changes, external failures, and diagnostic context; avoid meaningless high-frequency output.
 - Retain business identifiers on frequent paths. Check the logging level before serialization or expensive computation. Avoid duplicate exception logs, retain stack traces when logging at the current layer, and omit credentials, tokens, and complete sensitive objects.
 
@@ -79,7 +81,21 @@ Complete the requested implementation and necessary verification; when asked onl
 - Chinese business comments should explain intent, constraints, algorithm steps, and tradeoffs, not translate code line by line. Document actual parameters, returns, and exceptions for public capabilities, complex methods or functions, and key fields as the project requires.
 - Place documentation comments where the language and documentation tools require, and local explanations near the implementation. Update comments when behavior changes; do not invent authors, dates, performance guarantees, or unimplemented capabilities.
 
-## 4. Language-Specific Rules
+## 4. Reject Overengineering and Redundant Defensive Programming
+
+### Design Boundaries
+
+- **Design for current requirements**: Use the current task and confirmed requirements for change as the basis for a direct, clear implementation. Do not introduce interfaces, abstract base classes, strategies, factories, configuration options, or general-purpose frameworks for hypothetical extensions.
+- **Abstractions need concrete benefits**: New abstractions should address existing duplicated business knowledge, identifiable variation points, or isolation needs. A single implementation, a few local lines of logic, or possible future reuse alone does not justify an abstraction. Follow existing project conventions and avoid layers whose maintenance cost exceeds their benefit.
+
+### Defensive Programming Boundaries
+
+- **Justify validation**: Decide what to validate from input sources, interface contracts, type constraints, and business rules. Do not add null checks at every layer merely because null is theoretically possible. Handle nullable query results and permitted absence according to the contract.
+- **Trust established guarantees**: Do not revalidate conditions already guaranteed upstream and still intact along the same call path. Do not routinely null-check required dependencies after construction, validated parameters, or return values guaranteed non-null by contract. Retain necessary checks at entry points that bypass validation, new trust boundaries, or where state can change.
+- **Do not hide errors with fallbacks**: Do not arbitrarily return empty collections, null, default objects, zero, or success results to avoid exceptions. Do not silently skip invalid data or catch failures and continue. Permitted absence, skipping, and degradation require an explicit business or interface basis.
+- **Simplification must preserve necessary safeguards**: Distinguish redundant defenses from required constraints. Do not remove authorization, business-state, write-scope, concurrency, or data-consistency checks merely to simplify code.
+
+## 5. Language-Specific Rules
 
 ### Java
 
@@ -101,7 +117,7 @@ Apply these rules only to Java. Rules for Lombok, MyBatis-Plus, and similar depe
 
 #### Collections, Numbers, and Data Access
 
-- Use streams for clear filtering, mapping, and grouping. Simple nullable conversions may use `Optional`, and reusable conversions may accept a `Function`; keep them readable.
+- Use streams for simple conversions; prefer loops for complex branches or side effects. Simple nullable conversions may use `Optional`, and reusable conversions may accept a `Function`; avoid meaningless call layers.
 - Use `BigDecimal` as required by the domain: compare numeric values with `compareTo`, and use `equals` only when both value and scale matter.
 - `Collectors.toMap` without a merge function throws on duplicate keys; where duplicates are valid, provide a merge function implementing the domain policy.
 - Where MyBatis-Plus is already used, consider `LambdaQueryWrapper` and getter method references.
@@ -111,9 +127,10 @@ Apply these rules only to Java. Rules for Lombok, MyBatis-Plus, and similar depe
 
 - Place Javadoc for classes, methods, constructors, and fields above the declaration's entire annotation block, or directly above the declaration when there are no annotations. Do not insert it between annotations or between annotations and the declaration.
 
-## 5. Final Review and Delivery
+## 6. Final Review and Delivery
 
 - [ ] The diff fulfills the requested scope and applicable conventions, with no unintended changes to behavior or user edits.
+- [ ] Methods or functions have a single responsibility and complete logic, with meaningful extraction. New abstractions, validation, fallbacks, and early exits have a current requirement or contractual basis, without redundant defenses or silently swallowed errors.
 - [ ] Verification covers the affected contracts, boundaries, and failure paths; comments match the final implementation.
 
 Briefly report changes, verification results, and relevant checks not run or blocked. Explain only key tradeoffs affecting use or maintenance; do not restate the skill's rules.

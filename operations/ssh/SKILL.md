@@ -50,10 +50,10 @@ PowerShell 7 also runs on Linux and macOS. Choose quoting by shell and paths by 
 
 ## Connect
 
-1. Complete username confirmation first. Then reuse existing SSH configuration, ssh-agent, and default identities. Pass an identity path only when the user specifies it or available configuration clearly identifies it. Do not read private key contents.
+1. Reuse existing SSH configuration, ssh-agent, and default identities. Pass an identity path only when the user specifies it or available configuration clearly identifies it. Do not read private key contents.
 2. Make a noninteractive connection attempt with a bounded timeout. For OpenSSH, use `BatchMode=yes`, `ConnectTimeout=10`, and `ConnectionAttempts=1`. Set the requested port and `HostName` explicitly to prevent an SSH alias from redirecting the supplied IP. Disable local commands and forwarding for this verification.
 3. Execute a minimal remote command that prints a recognizable marker and, where supported, the hostname and username. Choose syntax appropriate to the remote shell. Require both a zero SSH exit status and the marker in remote output before reporting success.
-4. On success, briefly report that the SSH connection succeeded. Include the target, username, or port only when useful to identify the verified connection. Continue with any follow-up work already requested by the user; otherwise, finish after reporting the result.
+4. Briefly report the connection result. Continue with follow-up work already requested by the user; otherwise, finish after reporting. Include the target, username, or port only when useful to identify the connection.
 
 ### Commands by local shell
 
@@ -118,7 +118,7 @@ If the check fails, read the SSH error before choosing the next step:
 
 ## User-executed public key setup
 
-Give the user concise, ready-to-run commands tailored to their local operating system and shell and the remote account. Complete username confirmation before generating these commands. Fill in the actual IP, confirmed username, port, and appropriate paths. These are instructions for the user to execute themselves: do not generate keys, install public keys, or change authentication configuration on their behalf.
+Give the user concise, ready-to-run commands tailored to their local operating system and shell and the remote account. Fill in the IP supplied for the current target, confirmed login username, port, and appropriate paths. These are instructions for the user to execute themselves: do not generate keys, install public keys, or change authentication configuration on their behalf.
 
 Keep the normal response to two commands when a key pair already exists: one public key installation command, then one verification command. Add key generation only when needed. Show only the detected environment's commands, with actual values filled in. Do not make the user display and copy the public key, open a remote editor, or run separate permission commands when a single installation command is suitable.
 
@@ -170,7 +170,6 @@ Report that the connection has not yet succeeded while setup is pending. Once th
 
 ## Boundaries
 
-- Connection verification may record a new server host key in `known_hosts` using `StrictHostKeyChecking=accept-new` when supported. Key creation and public key installation are always user-executed steps.
+- Connection verification may record a new server host key in `known_hosts` using `StrictHostKeyChecking=accept-new` when supported.
 - Keep private keys and credentials local. Do not print, upload, or copy private key contents.
-- Keep connection errors visible and distinguish failed authentication from a failed remote verification command.
 - Connection verification itself must not change SSH server settings or restart services. After successful verification, perform further remote operations only within the user's requested scope.
