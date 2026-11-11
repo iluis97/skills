@@ -1,0 +1,5 @@
+interface:
+  display_name: "Code Like Me"
+  short_description: "Apply personal coding conventions to changes"
+policy:
+  allow_implicit_invocation: false

@@ -1,6 +1,7 @@
 ---
 name: add-doc
-description: 添加或完善代码文档与注释。适用于为代码补充文档、通过注释解释复杂逻辑或纠正现有文档的请求。未指定文件时，默认处理未提交的代码变更。
+description: 在指定范围内添加或完善代码文档与注释。
+disable-model-invocation: true
 ---
 
 # add-doc
@@ -36,7 +37,6 @@ description: 添加或完善代码文档与注释。适用于为代码补充文�
  * 返回用户的显示名称。
  */
 @Override
-@Nullable
 public String getDisplayName() {
     return displayName;
 }

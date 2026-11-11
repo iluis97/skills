@@ -1,0 +1,5 @@
+interface:
+  display_name: "SSH"
+  short_description: "Verify SSH access with existing authentication"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Log Analysis"
+  short_description: "Investigate logs with traceable evidence"
+policy:
+  allow_implicit_invocation: false
