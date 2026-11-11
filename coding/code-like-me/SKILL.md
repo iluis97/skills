@@ -23,7 +23,7 @@ Complete the requested implementation and necessary verification; when asked onl
 
 1. **Define scope**: Identify requirements, interfaces, compatibility constraints, and existing changes. Ask only when missing information affects business behavior and cannot be resolved from context.
 2. **Read context**: Inspect project instructions, build and language versions, structure, relevant callers, implementations, and tests. When available, sample two or three similar implementations in the same module to confirm conventions relevant to the task; scale exploration to the change. Syntax and APIs must support the target version.
-3. **Choose an implementation**: Reuse types, interfaces, and utilities before adding abstractions. Identify stable steps and variation points in complex flows; implement simple requirements directly.
+3. **Choose an implementation**: Reuse types, interfaces, and utilities first, then decide whether current requirements justify new abstractions. Identify stable steps and variation points in complex flows; implement simple requirements directly.
 4. **Make changes**: Organize methods or functions around a single responsibility and complete logic; implement necessary boundary validation and failure handling according to contracts.
 5. **Verify and review**: Choose compilation, static checks, existing tests, or focused new tests according to impact, covering branches, states, and boundaries. Review the diff using the final checklist before delivery.
 
@@ -31,8 +31,10 @@ Complete the requested implementation and necessary verification; when asked onl
 
 ### Design Principles and Patterns
 
-- **Responsibilities and contracts**: Aim for clear responsibilities, focused interfaces, and low coupling; apply SOLID and the Law of Demeter as needed. Do not tighten interface input conditions or silently change return, exception, or side-effect semantics. Follow the project's injection approach for container-managed dependencies.
-- **Reuse and collaboration**: Prefer existing components and extension mechanisms, composition, and delegation. Use inheritance for genuine substitutability or stable template flows. Follow the design boundaries in the next chapter when adding abstractions.
+- **Responsibilities and contracts**: Aim for clear responsibilities, focused interfaces, and low coupling; apply SOLID and the Law of Demeter as needed. Follow the project's injection approach for container-managed dependencies. Preserve interface contracts when modifying existing capabilities; do not tighten input conditions or silently change return, exception, or side-effect semantics.
+- **Reuse and collaboration**: Prefer existing components and extension mechanisms, composition, and delegation. Use inheritance for genuine substitutability or stable template flows.
+- Implement current requirements directly. New abstractions should address existing duplicated business knowledge, identifiable variation points, or isolation needs, with maintenance costs proportionate to their benefits.
+- **Do not**: Introduce interfaces, abstract base classes, strategies, factories, or configuration layers solely for possible future extensions. A single implementation or a few lines of logic is not sufficient justification for an abstraction; existing project conventions and concrete isolation needs can justify one.
 - **Component collaboration**: In complex flows, check dependency direction, resource ownership, lifecycle, ordering, concurrency, and failure propagation. Verify that substitution and extension preserve contracts.
 
 ### Naming and Logic Organization
@@ -40,11 +42,18 @@ Complete the requested implementation and necessary verification; when asked onl
 - Names of types, methods, functions, and variables should express domain concepts and purpose. Follow the project's English naming, abbreviations, and type suffixes.
 - Method or function names should identify actions and objects; follow project boolean naming conventions. Distinguish queries, conversions, validation, and execution; names must not conceal writes or external calls.
 - **Single responsibility, complete logic**: Each method or function should fulfill one clear responsibility through a semantically complete piece of logic. Keep the checks, calculations, and processing belonging to that responsibility coherent; do not mix in unrelated responsibilities.
-- **Extract by meaning**: Main flows should clearly show business steps at a consistent level of abstraction; orchestration methods may coordinate multiple steps that jointly fulfill their responsibility. Extract local logic when it has independent business meaning, offers reuse, or materially improves main-flow readability. Do not split code mechanically to shorten it; avoid calls that merely forward arguments or wrap expressions without independent meaning.
-- **Guard clauses serve the main flow**: Prefer early returns or exceptions for unmet preconditions, legitimate no-op cases, and failure branches so normal processing unfolds sequentially. Decide whether checks are necessary using the defensive programming boundaries in chapter 4.
-- **Explicit exit semantics**: Handle invalid input and business failures according to established exception or error contracts. Return without action only when the contract allows it; do not silently exit instead of reporting failure. Retain clear, simple `if/else` structures, and do not force parallel normal business branches into scattered early returns. Preserve resource cleanup, transactions, and necessary side effects on early exit.
+- Organize main flows by business steps at a consistent level of abstraction. Extract methods for independent meaning, reuse, or a material improvement in main-flow readability. Orchestration methods may coordinate multiple steps that jointly fulfill their responsibility.
+- **Do not**: Split methods mechanically just to shorten them, or add forwarding calls and wrappers without independent responsibilities. Judge framework adapters and delegation with explicit isolation responsibilities by their actual purpose.
+- Express boolean results directly, without equivalent `if/else` wrappers or repeated checks of conditions that still hold in the current branch. Retain branches with distinct processing or side effects.
+- Prefer early exits for unmet preconditions, legitimate no-op cases, and failure branches so normal processing unfolds sequentially. Preserve resource cleanup, transactions, and necessary side effects on exit.
+- **Do not**: Silently exit instead of reporting business failure, or force normal business branches that should be compared side by side into scattered early returns. Return without action only when the contract allows it; clear `if/else` structures may remain.
 - Put repeated business rules in their owning domain or services. Reserve utility modules for stateless capabilities shared across domains.
-- Use constants, enums, or idiomatic language types for meaningful fixed values; do not mechanically extract literals that occur once and are already clear.
+
+### Fixed Values and Business Codes
+
+- For business values such as status codes, type codes, thresholds, and defaults, prefer existing constants, enums, configuration, or capabilities of their owning types. When no suitable definition exists, name the value within its owning scope.
+- **Do not**: Scatter business magic values in conditions, assignments, queries, or calculations, such as `status == 2`, or redefine existing constants. Express the business meaning even when a value appears only once.
+- Clear local literals such as the zero in `count > 0` need no extraction. Do not mechanically extract every literal or turn fixed business definitions into configuration options without a configuration requirement.
 
 ### Data and State Modeling
 
@@ -53,22 +62,29 @@ Complete the requested implementation and necessary verification; when asked onl
 - Define return, default, or exception contracts for null and unknown codes; do not silently treat them as valid states. Use stable codes in interfaces, persistence, and messages; do not arbitrarily change published codes.
 - State types may encapsulate simple behavior tied to their attributes. Put complex behavior involving services, databases, or external calls in strategies or business components.
 
-### Validation, Exceptions, and Logging
+### Validation and Defensive Programming Boundaries
 
-- Validate formats and required fields at entry points, and existence, permissions, states, and business constraints in services. Follow established responsibility boundaries; use the defensive programming boundaries in the next chapter to decide on validation and fallbacks.
-- Reuse validation tools, business exceptions, and error codes. Explain the business cause without exposing stack traces or internal details to callers.
-- Catch exceptions only to recover, add context, or translate their semantics; otherwise use centralized handling.
-- Follow logging frameworks and levels. Use parameterized logs for key changes, external failures, and diagnostic context; avoid meaningless high-frequency output.
-- Retain business identifiers on frequent paths. Check the logging level before serialization or expensive computation. Avoid duplicate exception logs, retain stack traces when logging at the current layer, and omit credentials, tokens, and complete sensitive objects.
+- Base validation on input sources, types, contracts, and business rules. Entry points validate formats and required fields; services validate existence, permissions, states, and business constraints. Follow established responsibility boundaries.
+- **Do not**: Recheck conditions already guaranteed upstream and still intact along the same call path, including required dependencies, validated parameters, and return values guaranteed non-null by contract. Do not add null checks at every layer merely because null is theoretically possible, or fallbacks for impossible cases.
+- Retain necessary checks at new entry points, new trust boundaries, for query results that may be absent, and where state can change. Preserve authorization, business-state, write-scope, concurrency, and consistency safeguards when simplifying code.
+
+### Exceptions and Logging
+
+- Report failures according to established exception contracts. Reuse validation tools, business exceptions, and error codes, and explain the business cause in messages. Catch exceptions to recover, add context, or translate semantics; otherwise use centralized handling.
+- **Do not**: Return empty collections, null, default objects, zero, or success results, skip invalid data, or swallow errors and continue without a business or interface basis. Preserve contractually permitted empty results, recovery, and degradation.
+- Error messages for callers must not expose stack traces or internal details.
+- **Logs support diagnosis**: Follow logging frameworks and levels. Use parameterized logs for key changes, external failures, and diagnostic context. Check the logging level before serialization or expensive computation.
+- **Consistent business logs**: Use a consistent, searchable business keyword prefix across all stages of the same business flow. Retain key business identifiers and state the processing step or outcome to connect the flow and locate problems.
+- **Avoid duplicate exception logs and sensitive output**: Avoid meaningless high-frequency output and duplicate exception logs. Retain stack traces when logging exceptions at the current layer; do not log credentials, tokens, or complete sensitive objects.
 
 ### Collections, Conversion, and Data Access
 
 - Prefer existing collection, string, conversion, and data access utilities. Do not add dependencies when the standard library suffices.
 - Use clear, idiomatic constructs for filtering, mapping, and grouping; prefer loops for complex branches, side effects, or early termination.
-- Define semantics for empty collections, null elements, duplicate keys, and ordering. Use domain-specific conflict policies when merging data rather than arbitrarily retaining one entry.
-- Specify numeric defaults, precision, rounding, and comparison semantics; do not rely on implicit utility behavior or treat zero as missing without domain justification.
+- Define semantics for empty collections, null elements, duplicate keys, and ordering. Use domain-specific conflict policies when merging data; do not arbitrarily retain one entry to eliminate a conflict.
+- Specify numeric defaults, precision, rounding, and comparison semantics. Do not rely on unverified implicit utility behavior or treat zero as missing without domain justification.
 - Follow existing conversion and field mapping approaches. Check required fields, types, and meaning; do not let generic copying obscure differences.
-- Reuse data access components or service queries and avoid querying each item in a loop. Consider batch size and transaction semantics.
+- Reuse data access components or service queries. Do not query items individually in a loop when they can be queried in a batch; consider batch size and transaction semantics.
 - Define transaction boundaries by business atomicity and honor framework transaction and rollback rules. Follow existing compensation mechanisms for external calls, caches, and messages.
 - When maintaining caches after database writes, check and reuse after-commit callbacks to avoid cache changes surviving a rollback. Define behavior without a transaction and when callbacks fail.
 - Cache repeated intermediate results on hot paths when they can be reliably invalidated. Prefer existing components and define keys, lifecycle, invalidation after writes, and concurrency semantics; do not copy capacities or TTLs blindly.
@@ -81,21 +97,7 @@ Complete the requested implementation and necessary verification; when asked onl
 - Chinese business comments should explain intent, constraints, algorithm steps, and tradeoffs, not translate code line by line. Document actual parameters, returns, and exceptions for public capabilities, complex methods or functions, and key fields as the project requires.
 - Place documentation comments where the language and documentation tools require, and local explanations near the implementation. Update comments when behavior changes; do not invent authors, dates, performance guarantees, or unimplemented capabilities.
 
-## 4. Reject Overengineering and Redundant Defensive Programming
-
-### Design Boundaries
-
-- **Design for current requirements**: Use the current task and confirmed requirements for change as the basis for a direct, clear implementation. Do not introduce interfaces, abstract base classes, strategies, factories, configuration options, or general-purpose frameworks for hypothetical extensions.
-- **Abstractions need concrete benefits**: New abstractions should address existing duplicated business knowledge, identifiable variation points, or isolation needs. A single implementation, a few local lines of logic, or possible future reuse alone does not justify an abstraction. Follow existing project conventions and avoid layers whose maintenance cost exceeds their benefit.
-
-### Defensive Programming Boundaries
-
-- **Justify validation**: Decide what to validate from input sources, interface contracts, type constraints, and business rules. Do not add null checks at every layer merely because null is theoretically possible. Handle nullable query results and permitted absence according to the contract.
-- **Trust established guarantees**: Do not revalidate conditions already guaranteed upstream and still intact along the same call path. Do not routinely null-check required dependencies after construction, validated parameters, or return values guaranteed non-null by contract. Retain necessary checks at entry points that bypass validation, new trust boundaries, or where state can change.
-- **Do not hide errors with fallbacks**: Do not arbitrarily return empty collections, null, default objects, zero, or success results to avoid exceptions. Do not silently skip invalid data or catch failures and continue. Permitted absence, skipping, and degradation require an explicit business or interface basis.
-- **Simplification must preserve necessary safeguards**: Distinguish redundant defenses from required constraints. Do not remove authorization, business-state, write-scope, concurrency, or data-consistency checks merely to simplify code.
-
-## 5. Language-Specific Rules
+## 4. Language-Specific Rules
 
 ### Java
 
@@ -119,7 +121,7 @@ Apply these rules only to Java. Rules for Lombok, MyBatis-Plus, and similar depe
 
 - Use streams for simple conversions; prefer loops for complex branches or side effects. Simple nullable conversions may use `Optional`, and reusable conversions may accept a `Function`; avoid meaningless call layers.
 - Use `BigDecimal` as required by the domain: compare numeric values with `compareTo`, and use `equals` only when both value and scale matter.
-- `Collectors.toMap` without a merge function throws on duplicate keys; where duplicates are valid, provide a merge function implementing the domain policy.
+- Where duplicate keys are valid, provide a merge function for `Collectors.toMap` implementing the business conflict policy. Without a merge function, duplicate keys throw an exception. Do not arbitrarily keep the first or last entry merely to suppress the exception.
 - Where MyBatis-Plus is already used, consider `LambdaQueryWrapper` and getter method references.
 - For proxy-based transactions, verify that calls pass through the proxy and that the configured rollback rules cover the intended exception types.
 
@@ -127,10 +129,11 @@ Apply these rules only to Java. Rules for Lombok, MyBatis-Plus, and similar depe
 
 - Place Javadoc for classes, methods, constructors, and fields above the declaration's entire annotation block, or directly above the declaration when there are no annotations. Do not insert it between annotations or between annotations and the declaration.
 
-## 6. Final Review and Delivery
+## 5. Final Review and Delivery
 
 - [ ] The diff fulfills the requested scope and applicable conventions, with no unintended changes to behavior or user edits.
-- [ ] Methods or functions have a single responsibility and complete logic, with meaningful extraction. New abstractions, validation, fallbacks, and early exits have a current requirement or contractual basis, without redundant defenses or silently swallowed errors.
+- [ ] Methods or functions have a single responsibility and complete logic, with meaningful extraction. Business fixed values use existing definitions or are named within their owning scope, without scattered business magic values.
+- [ ] New abstractions, validation, fallbacks, and early exits have a current requirement or contractual basis, without redundant conditions, duplicate defenses, or silently swallowed errors. Necessary safeguards remain intact.
 - [ ] Verification covers the affected contracts, boundaries, and failure paths; comments match the final implementation.
 
 Briefly report changes, verification results, and relevant checks not run or blocked. Explain only key tradeoffs affecting use or maintenance; do not restate the skill's rules.
