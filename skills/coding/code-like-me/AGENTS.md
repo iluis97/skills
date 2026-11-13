@@ -1,14 +1,23 @@
-# code-like-me 维护约定
+# code-like-me Maintenance Conventions
 
-本文件约束本目录技能文档的编写与后续迭代。
+These conventions govern authoring and subsequent revisions of this skill's documents, including their Chinese
+counterparts under `docs/coding/code-like-me/` in this repository.
 
-- 按主题或执行流程组织内容，不拆成统一的“建议遵守”和“绝对不要”两大章。
-- 先说明期望的代码形态与判断依据，再在对应位置明确禁止已观察到的错误，并就地写清适用条件和例外。
-- 使用简短条目，一个条目表达一个主要判断；条件和例外融入对应句子，不使用“期望写法／禁止行为／适用边界”三段模板。
-- 对魔法值、冗余判断、机械拆分、过度设计、兜底掩盖错误等重点问题，以紧邻正向要求的“ **禁止**
-  ：”条目突出；普通规则和简单硬约束直接简述，不给每条规则机械添加标签。
-- 正向要求用于描述期望结果；禁止项用于约束容易反复违反的具体行为，不为每条建议机械配一条禁令，也不因假设中的问题不断追加禁止项。
-- 新反馈优先修订或合并到所属主题的现有规则，避免在文末堆积补丁、重复规则或建立独立的反模式总表。
-- 同一问题在所属主题集中说明，完成前清单仅作简短检查，不重复展开规则。
-- 保留项目优先级、接口契约和必要保障；有条件的偏好不得改成无条件禁令。仅在确实没有例外时使用绝对措辞。
-- 中英文版本的规则含义、强度、适用边界与例外应保持对应；用户要求分阶段验收时，按指定版本先行修改，再按后续指示同步。
+- Organize content by topic or workflow; do not split it into blanket "recommended" and "absolutely forbidden" sections.
+- Explain the expected code structure and reasoning first. State prohibitions against observed mistakes alongside the
+  relevant guidance, including their conditions and exceptions.
+- Use concise items, each expressing one main judgment. Integrate conditions and exceptions into the item rather than
+  using a three-part "expected style / prohibited behavior / applicable boundaries" template.
+- For recurring issues such as magic values, redundant checks, mechanical splitting, overengineering, and fallbacks
+  that hide errors, place a **Do not** item immediately after the positive guidance. State ordinary rules and simple
+  constraints directly; do not mechanically label every rule.
+- Positive guidance describes the expected result; prohibitions address specific recurring mistakes. Do not attach a
+  prohibition to every recommendation or keep adding prohibitions for hypothetical problems.
+- Revise or merge feedback into the existing guidance for its topic. Avoid appending patches, duplicating rules, or
+  creating a separate catalog of anti-patterns.
+- Explain each issue in its own topic. Keep the final checklist brief rather than repeating detailed guidance.
+- Preserve project priorities, interface contracts, and necessary safeguards. Do not turn conditional preferences into
+  unconditional bans; use absolute wording only when there are no applicable exceptions.
+- When both English and Chinese versions exist, update both in the same change to keep meaning, rule strength, scope,
+  exceptions, and example behavior aligned. If the user explicitly requests staged review, update the requested version
+  first, report pending synchronization, and synchronize the counterpart in the subsequent stage.

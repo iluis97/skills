@@ -55,7 +55,7 @@ connect, confirm the login username for the supplied IP.
    that environment. Do not install software automatically.
 
 Before constructing connection or public-key setup commands, read the sections matching the local and remote shells
-in [commands.md](commands.md). Use only examples appropriate to the detected environment.
+in [references/commands.md](references/commands.md). Use only examples appropriate to the detected environment.
 
 ## Connect
 
@@ -105,7 +105,7 @@ commands when a single installation command is suitable.
    to answer `n`. If only the public key is missing, provide `ssh-keygen -y` with shell-appropriate output redirection
    to recover it.
 2. Prefer a single `ssh-copy-id` command where available and suitable. Otherwise, for a POSIX remote account, use one
-   local public-key pipe into SSH as shown in [commands.md](commands.md#one-command-installation-examples). Keep remote
+   local public-key pipe into SSH as shown in [references/commands.md](references/commands.md#one-command-installation-examples). Keep remote
    directory creation, permissions, and installation in that command. Do not assume `ssh-copy-id` exists on Windows or
    use POSIX authorization paths on a Windows SSH server.
 3. The simple pipe appends a key and is intended for one-time setup. State briefly that it should be executed once. If

@@ -1,13 +1,15 @@
 # Docker 日志来源
 
+本文是 [英文补充规则](../../../../skills/operations/log-analysis/references/docker.md) 的中文阅读版，供人阅读和维护。
+
 仅用于 Docker 来源。按主技能固定的服务、实例、时间窗和关键词执行；通用采集与证据规则仍然适用。
 
 - Docker 服务按容器名称、Compose 服务及项目标签定位，固定容器身份。同一服务有多个实例时保留实例区分。实时日志使用
   `docker logs`，历史日志优先查看容器挂载到宿主机的日志目录。
 - 实时日志：对指定服务的容器使用 `docker logs --since/--until --timestamps` 读取固定时间窗，再按关键词筛选完整事件；包含
   stdout/stderr，检查日志驱动、保留及轮转限制。持续观察时使用 `--follow`
-  ，并遵守 [SKILL.zh-CN.md](SKILL.zh-CN.md#4-采集与完整性) 的观察时限要求。
-- 历史日志：通过 `docker inspect` 核对挂载目标与宿主机来源，再按 [SKILL.zh-CN.md](SKILL.zh-CN.md#31-用户提供的文件或片段)
+  ，并遵守 [SKILL.zh-CN.md](../SKILL.zh-CN.md#4-采集与完整性) 的观察时限要求。
+- 历史日志：通过 `docker inspect` 核对挂载目标与宿主机来源，再按 [SKILL.zh-CN.md](../SKILL.zh-CN.md#31-用户提供的文件或片段)
   的文件规则定位和读取。挂载目录较多时，以服务及挂载关系缩小候选范围，结合时间范围和关键词定位，不直接扫描所有挂载目录。
 - 挂载缺失、历史容器已删除且无法确认原挂载、权限不足或保留期不足时，说明已核验范围和缺口。不静默改用 Docker
   日志并声称覆盖历史时间窗；仅在来源覆盖经核验且符合用户目标时补充其他来源。

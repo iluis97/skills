@@ -13,7 +13,7 @@ $ssh
 验证 deploy@192.0.2.10 的 SSH 连接，端口 2222。
 ```
 
-Agent 先确认目标和运行环境，再读取包内 `commands.md` 中对应 Shell 的部分。已要求后续操作时，验证成功后继续已授权工作。
+Agent 先确认目标和运行环境，再读取包内 `references/commands.md` 中对应 Shell 的部分。已要求后续操作时，验证成功后继续已授权工作。阅读时可查看 [SSH 中文命令参考](references/commands.zh-CN.md)。
 
 ## 常见问题
 
@@ -28,4 +28,4 @@ Agent 先确认目标和运行环境，再读取包内 `commands.md` 中对应 S
 - 只有退出码为零且输出包含验证标记时才报告成功。
 - 不读取或输出私钥、密码，待配置时明确报告尚未连接成功。
 
-[执行规则](../../skills/operations/ssh/SKILL.md) · [中文规则](../../skills/operations/ssh/SKILL.zh-CN.md)
+[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/operations/ssh/SKILL.md)

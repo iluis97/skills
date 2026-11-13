@@ -9,9 +9,9 @@ collection and evidence requirements still apply.
 - Live logs: use `docker logs --since/--until --timestamps` on the specified services' containers for a fixed window,
   then match complete events by keywords. Include stdout/stderr and check the logging driver, retention, and rotation
   limits. For continuous observation, use `--follow` with the observation deadline required
-  by [Collection and Completeness](SKILL.md#4-collection-and-completeness).
+  by [Collection and Completeness](../SKILL.md#4-collection-and-completeness).
 - Historical logs: use `docker inspect` to verify mount destinations and host sources, then locate and read files
-  according to [User-Supplied Files or Excerpts](SKILL.md#31-user-supplied-files-or-excerpts). When many mounts exist,
+  according to [User-Supplied Files or Excerpts](../SKILL.md#31-user-supplied-files-or-excerpts). When many mounts exist,
   narrow candidates by service and mount relationships, and locate logs using time range and keywords rather than
   scanning all mounted directories.
 - If mounts are missing, an old container has been removed and its original mounts cannot be confirmed, permissions are

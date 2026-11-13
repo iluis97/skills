@@ -1,6 +1,6 @@
 # SSH Command Reference
 
-Use with the [entrypoint](SKILL.md), after confirming the target username and applying its authentication boundaries.
+Use with the [entrypoint](../SKILL.md), after confirming the target username and applying its authentication boundaries.
 Read and use only the sections matching the current environment.
 
 ## Environment Probes

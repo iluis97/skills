@@ -20,7 +20,7 @@ $ssh $log-analysis
 连接 user@192.0.2.10，排查 api 服务最近一小时的超时。
 ```
 
-来源为 Docker 时，Agent 读取包内 `docker.md`，核对容器身份、挂载目录及日志留存。
+来源为 Docker 时，Agent 读取包内 `references/docker.md`，核对容器身份、挂载目录及日志留存。阅读时可查看 [Docker 中文补充规则](references/docker.zh-CN.md)。
 
 ## 常见问题
 
@@ -35,4 +35,4 @@ $ssh $log-analysis
 - 多行异常保留完整事件，不从展示样本外推总量。
 - 结论区分事实和推断，关键证据可定位，覆盖缺口明确。
 
-[执行规则](../../skills/operations/log-analysis/SKILL.md) · [中文规则](../../skills/operations/log-analysis/SKILL.zh-CN.md)
+[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/operations/log-analysis/SKILL.md)

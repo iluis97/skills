@@ -13,7 +13,7 @@ $code-like-me
 实现订单查询接口，沿用当前模块的分页和异常契约。
 ```
 
-通用规则位于入口；处理 Java 时，Agent 在实施前读取包内 `java.md`。其他语言不需要加载 Java 专属规则。
+通用规则位于英文入口；处理 Java 时，Agent 在实施前读取包内 `references/java.md`。其他语言不需要加载 Java 专属规则。阅读时可查看 [Java 中文补充规则](references/java.zh-CN.md)。
 
 ## 常见问题
 
@@ -27,4 +27,4 @@ $code-like-me
 - 业务固定值表达含义，复用已有组件，不新增无需求依据的抽象或兜底。
 - 接口、权限、事务与并发保障得到保留，验证与改动影响相称。
 
-[执行规则](../../skills/coding/code-like-me/SKILL.md) · [中文规则](../../skills/coding/code-like-me/SKILL.zh-CN.md)
+[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/coding/code-like-me/SKILL.md) · [中文维护约定](AGENTS.zh-CN.md)

@@ -27,4 +27,4 @@ $add-doc
 - 注释符合实际行为，沿用项目语言与格式，不逐行翻译代码。
 - 报告修改内容及适用检查的结果。
 
-[执行规则](../../skills/coding/add-doc/SKILL.md) · [中文规则](../../skills/coding/add-doc/SKILL.zh-CN.md)
+[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/coding/add-doc/SKILL.md)

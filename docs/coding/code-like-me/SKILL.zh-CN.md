@@ -1,10 +1,6 @@
----
-name: code-like-me
-description: 在遵循项目约定与接口契约的前提下应用个人编码偏好。
-disable-model-invocation: true
----
-
 # code-like-me
+
+本文是 [英文执行规则](../../../skills/coding/code-like-me/SKILL.md) 的中文阅读版，供人阅读和维护，不作为技能入口。在遵循项目约定与接口契约的前提下应用个人编码偏好。
 
 ## 目标
 
@@ -103,7 +99,7 @@ disable-model-invocation: true
 
 ## 4. 各语言的补充规则
 
-处理 Java 代码时，在选择实现和修改前阅读 [java.zh-CN.md](java.zh-CN.md)。其他语言沿用项目规范，不加载 Java 专属规则。
+处理 Java 代码时，在选择实现和修改前阅读 [references/java.zh-CN.md](references/java.zh-CN.md)。其他语言沿用项目规范，不加载 Java 专属规则。
 
 ## 5. 完成前检查与交付
 

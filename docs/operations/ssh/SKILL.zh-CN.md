@@ -1,10 +1,6 @@
----
-name: ssh
-description: 验证指定服务器的 SSH 访问，必要时指导用户自行配置公钥。
-disable-model-invocation: true
----
-
 # SSH
+
+本文是 [英文执行规则](../../../skills/operations/ssh/SKILL.md) 的中文阅读版，供人阅读和维护，不作为技能入口。验证指定服务器的 SSH 访问，必要时指导用户自行配置公钥。
 
 ## 1. 适用范围
 
@@ -41,7 +37,7 @@ disable-model-invocation: true
 3. 使用当前环境的主目录、路径语法和引用规则。Windows、WSL 和容器中的密钥、SSH agent、配置及网络访问可能不同，不为绕过失败而擅自切换环境。
 4. 缺少可用 SSH 客户端或执行工具时，说明缺失项，并给出适合该环境的下一步，不自动安装软件。
 
-构造连接或公钥配置命令前，阅读 [commands.zh-CN.md](commands.zh-CN.md) 中当前本地与远端 Shell 对应的部分；只使用匹配环境的示例。
+构造连接或公钥配置命令前，阅读 [references/commands.zh-CN.md](references/commands.zh-CN.md) 中当前本地与远端 Shell 对应的部分；只使用匹配环境的示例。
 
 ## 5. 执行连接
 
@@ -76,7 +72,7 @@ IP、已确认的登录用户名、端口和适用路径。这些步骤由用户
    `ssh-keygen -t ed25519 -f <key-path>` 命令。不覆盖密钥；出现覆盖提示时，告诉用户回答 `n`。仅缺公钥时，提供 `ssh-keygen -y`
    ，并使用适合当前 Shell 的输出重定向恢复公钥。
 2. 存在且适用时，优先使用一条 `ssh-copy-id` 命令。否则，对 POSIX
-   远程账号，按 [commands.zh-CN.md](commands.zh-CN.md#一条命令安装公钥) 的示例将本地公钥通过管道传给
+   远程账号，按 [references/commands.zh-CN.md](references/commands.zh-CN.md#一条命令安装公钥) 的示例将本地公钥通过管道传给
    SSH；远端目录创建、权限设置和安装包含在同一条命令内。不假设 Windows 自带 `ssh-copy-id`，也不对 Windows SSH 服务器套用
    POSIX 授权路径。
 3. 简单管道会追加公钥，适用于首次配置，简短说明仅执行一次。密钥可能已安装，尤其存在授权选项时，不建议追加无限制的重复公钥；先检查授权情况，或给出适当的去重方法。不将普通首次配置变成长篇手动编辑流程。

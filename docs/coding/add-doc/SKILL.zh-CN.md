@@ -1,10 +1,6 @@
----
-name: add-doc
-description: 在指定范围内添加或完善代码文档与注释。
-disable-model-invocation: true
----
-
 # add-doc
+
+本文是 [英文执行规则](../../../skills/coding/add-doc/SKILL.md) 的中文阅读版，供人阅读和维护，不作为技能入口。在指定范围内添加或完善代码文档与注释。
 
 ## 1. 范围与约束
 

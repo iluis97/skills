@@ -29,7 +29,7 @@ evidence as needed, keeping large volumes of raw text out of the model context a
   these conditions when resolving containers, selecting files, searching events, and reporting statistics. Record
   subsequent changes and their impact.
 - Verify service ownership and instances; ask when the source remains ambiguous rather than choosing a similarly named
-  service arbitrarily. See [docker.md](docker.md) for Docker service resolution.
+  service arbitrarily. See [references/docker.md](references/docker.md) for Docker service resolution.
 - Fix the specific sources (hosts, containers, or files); do not scan other services or related directories by default.
   Explain why before expanding the sources or time window, and stay within existing authorization.
 - Record exclusions so filtered results are not treated as covering the entire investigation scope.
@@ -70,7 +70,7 @@ requirements below.
 
 ### 3.2 Docker and Its Mounted Log Directories
 
-For Docker sources, read [docker.md](docker.md) before resolving containers and selecting log sources. Continue to apply
+For Docker sources, read [references/docker.md](references/docker.md) before resolving containers and selecting log sources. Continue to apply
 this entrypoint's time, event, collection, and evidence rules.
 
 ## 4. Collection and Completeness

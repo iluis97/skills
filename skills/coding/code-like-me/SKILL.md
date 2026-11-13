@@ -174,7 +174,7 @@ that scope.
 
 ## 4. Language-Specific Rules
 
-For Java work, read [java.md](java.md) before choosing an implementation and making changes. For other languages, follow
+For Java work, read [references/java.md](references/java.md) before choosing an implementation and making changes. For other languages, follow
 project conventions without loading the Java rules.
 
 ## 5. Final Review and Delivery
