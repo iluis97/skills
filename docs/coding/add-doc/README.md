@@ -6,6 +6,8 @@
 
 ## 什么时候使用
 
+按[安装与切换语言](../../../README.md#安装与切换语言)选择中文或英文技能包，调用名称均为 `$add-doc`。
+
 通过 `$add-doc` 显式调用。未指定文件时，检查暂存、未暂存及未被 Git 忽略的未跟踪代码文件，只处理这些变更涉及的声明和逻辑。
 
 ```text
@@ -27,4 +29,4 @@ $add-doc
 - 注释符合实际行为，沿用项目语言与格式，不逐行翻译代码。
 - 报告修改内容及适用检查的结果。
 
-[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/coding/add-doc/SKILL.md)
+[中文技能](../../../skills/zh-CN/coding/add-doc/SKILL.md) · [英文技能](../../../skills/en/coding/add-doc/SKILL.md)

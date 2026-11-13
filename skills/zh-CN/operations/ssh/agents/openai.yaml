@@ -1,0 +1,5 @@
+interface:
+  display_name: "SSH"
+  short_description: "使用已有认证验证 SSH 访问"
+policy:
+  allow_implicit_invocation: false

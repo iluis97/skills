@@ -1,6 +1,4 @@
-# Java 补充规则
-
-本文是 [英文补充规则](../../../../skills/coding/code-like-me/references/java.md) 的中文阅读版，供人阅读和维护。
+# Java 编码规则
 
 以下规则仅应用于 Java；Lombok、MyBatis-Plus 等规则仅在项目已使用对应依赖时生效。
 

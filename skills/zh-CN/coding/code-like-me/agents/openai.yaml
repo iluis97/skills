@@ -1,0 +1,5 @@
+interface:
+  display_name: "像我一样编码"
+  short_description: "将个人编码约定应用到代码变更"
+policy:
+  allow_implicit_invocation: false

@@ -6,6 +6,8 @@
 
 ## 什么时候使用
 
+按[安装与切换语言](../../../README.md#安装与切换语言)选择中文或英文技能包，调用名称均为 `$ssh`。
+
 通过 `$ssh` 显式调用，提供目标 IP 和登录用户名；端口默认 22，也可指定密钥路径。
 
 ```text
@@ -13,7 +15,7 @@ $ssh
 验证 deploy@192.0.2.10 的 SSH 连接，端口 2222。
 ```
 
-Agent 先确认目标和运行环境，再读取包内 `references/commands.md` 中对应 Shell 的部分。已要求后续操作时，验证成功后继续已授权工作。阅读时可查看 [SSH 中文命令参考](references/commands.zh-CN.md)。
+Agent 先确认目标和运行环境，再读取所选语言包内 `references/commands.md` 中对应 Shell 的部分。已要求后续操作时，验证成功后继续已授权工作。可查看 [SSH 中文命令参考](../../../skills/zh-CN/operations/ssh/references/commands.md)。
 
 ## 常见问题
 
@@ -28,4 +30,4 @@ Agent 先确认目标和运行环境，再读取包内 `references/commands.md` 
 - 只有退出码为零且输出包含验证标记时才报告成功。
 - 不读取或输出私钥、密码，待配置时明确报告尚未连接成功。
 
-[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/operations/ssh/SKILL.md)
+[中文技能](../../../skills/zh-CN/operations/ssh/SKILL.md) · [英文技能](../../../skills/en/operations/ssh/SKILL.md)

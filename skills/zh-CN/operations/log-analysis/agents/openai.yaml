@@ -1,0 +1,5 @@
+interface:
+  display_name: "日志分析"
+  short_description: "分析日志，以可定位的证据支撑结论"
+policy:
+  allow_implicit_invocation: false

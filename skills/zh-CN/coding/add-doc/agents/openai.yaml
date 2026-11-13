@@ -1,0 +1,5 @@
+interface:
+  display_name: "完善代码文档"
+  short_description: "完善代码文档与注释"
+policy:
+  allow_implicit_invocation: false

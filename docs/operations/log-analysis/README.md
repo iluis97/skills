@@ -6,6 +6,8 @@
 
 ## 什么时候使用
 
+按[安装与切换语言](../../../README.md#安装与切换语言)选择中文或英文技能包，调用名称均为 `$log-analysis`。
+
 通过 `$log-analysis` 显式调用，提供日志文件或可访问来源及调查目标。关键词可为空；时间、时区、服务与实例需要能够确定。
 
 ```text
@@ -20,7 +22,7 @@ $ssh $log-analysis
 连接 user@192.0.2.10，排查 api 服务最近一小时的超时。
 ```
 
-来源为 Docker 时，Agent 读取包内 `references/docker.md`，核对容器身份、挂载目录及日志留存。阅读时可查看 [Docker 中文补充规则](references/docker.zh-CN.md)。
+来源为 Docker 时，Agent 读取所选语言包内的 `references/docker.md`，核对容器身份、挂载目录及日志留存。可查看 [Docker 中文规则](../../../skills/zh-CN/operations/log-analysis/references/docker.md)。
 
 ## 常见问题
 
@@ -35,4 +37,4 @@ $ssh $log-analysis
 - 多行异常保留完整事件，不从展示样本外推总量。
 - 结论区分事实和推断，关键证据可定位，覆盖缺口明确。
 
-[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/operations/log-analysis/SKILL.md)
+[中文技能](../../../skills/zh-CN/operations/log-analysis/SKILL.md) · [英文技能](../../../skills/en/operations/log-analysis/SKILL.md)

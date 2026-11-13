@@ -6,6 +6,8 @@
 
 ## 什么时候使用
 
+按[安装与切换语言](../../../README.md#安装与切换语言)选择中文或英文技能包，调用名称均为 `$code-like-me`。
+
 通过 `$code-like-me` 显式调用，并提供需要完成的任务或已有讨论上下文。
 
 ```text
@@ -13,7 +15,7 @@ $code-like-me
 实现订单查询接口，沿用当前模块的分页和异常契约。
 ```
 
-通用规则位于英文入口；处理 Java 时，Agent 在实施前读取包内 `references/java.md`。其他语言不需要加载 Java 专属规则。阅读时可查看 [Java 中文补充规则](references/java.zh-CN.md)。
+通用规则位于所选语言包的 `SKILL.md`；处理 Java 时，Agent 在实施前读取同一包内的 `references/java.md`。其他语言不需要加载 Java 专属规则。可查看 [Java 中文规则](../../../skills/zh-CN/coding/code-like-me/references/java.md)。
 
 ## 常见问题
 
@@ -27,4 +29,4 @@ $code-like-me
 - 业务固定值表达含义，复用已有组件，不新增无需求依据的抽象或兜底。
 - 接口、权限、事务与并发保障得到保留，验证与改动影响相称。
 
-[中文规则](SKILL.zh-CN.md) · [英文执行规则](../../../skills/coding/code-like-me/SKILL.md) · [中文维护约定](AGENTS.zh-CN.md)
+[中文技能](../../../skills/zh-CN/coding/code-like-me/SKILL.md) · [英文技能](../../../skills/en/coding/code-like-me/SKILL.md) · [维护约定](../../../AGENTS.md#code-like-me)
