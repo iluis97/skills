@@ -1,6 +1,6 @@
 # Personal Skills
 
-个人技能库。每个技能提供可独立安装和使用的中文、英文语言包，安装时选择语言，调用名称保持一致。
+个人技能库。技能按语言独立安装和使用；提供中英文的技能在切换语言时保持调用名称一致，当前可用语言以技能列表为准。
 
 ## 技能列表
 
@@ -10,6 +10,7 @@
 | 编码 | code-like-me | [中文](skills/zh-CN/coding/code-like-me/SKILL.md) | [English](skills/en/coding/code-like-me/SKILL.md) | 遵循项目约定应用个人编码偏好 | [说明](docs/coding/code-like-me/README.md) |
 | 运维 | log-analysis | [中文](skills/zh-CN/operations/log-analysis/SKILL.md) | [English](skills/en/operations/log-analysis/SKILL.md) | 按范围分析日志并提供可定位证据 | [说明](docs/operations/log-analysis/README.md) |
 | 运维 | ssh | [中文](skills/zh-CN/operations/ssh/SKILL.md) | [English](skills/en/operations/ssh/SKILL.md) | 验证 SSH 访问并指导用户配置公钥 | [说明](docs/operations/ssh/README.md) |
+| 效率 | work-summary | [中文](skills/zh-CN/productivity/work-summary/SKILL.md) | — | 按需求整理工作与预估工时，确认后保存每日 Markdown 记录 | [说明](docs/productivity/work-summary/README.md) |
 
 ## 文件职责
 
@@ -26,12 +27,15 @@ skills/
     ├── coding/
     │   ├── add-doc/
     │   └── code-like-me/
-    └── operations/
-        ├── log-analysis/
-        └── ssh/
+    ├── operations/
+    │   ├── log-analysis/
+    │   └── ssh/
+    └── productivity/
+        └── work-summary/
 docs/
 ├── coding/
-└── operations/
+├── operations/
+└── productivity/
 ```
 
 - `skills/<语言>/<分类>/<技能名>/SKILL.md`：所选语言的技能执行入口。
@@ -45,7 +49,7 @@ docs/
 
 ## 安装与切换语言
 
-1. 选择语言：`zh-CN` 为中文，`en` 为英文。
+1. 在技能列表中选择可用语言：`zh-CN` 为中文，`en` 为英文。`work-summary` 当前仅提供中文版。
 2. 将所选语言、分类下的完整技能文件夹复制到宿主的技能目录，保持技能文件夹名称不变。例如，将 `skills/zh-CN/coding/code-like-me/` 复制到 `<宿主技能目录>/code-like-me/`。
 3. 在新会话中通过原名称显式调用，例如 `$code-like-me`。安装中文版时执行中文规则，安装英文版时执行英文规则。
 
