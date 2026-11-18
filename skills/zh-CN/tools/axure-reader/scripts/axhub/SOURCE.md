@@ -1,0 +1,3 @@
+Axhub official extractor: https://github.com/lintendo/Axhub-Skills/tree/b59910aae769904e19fe53c8e5ef2e3d094e0cea/skills/extract-axure-data
+Revision: b59910aae769904e19fe53c8e5ef2e3d094e0cea. MIT license: see LICENSE.
+Local changes: Windows file URL import, no automatic dependency installation, DOM-ready loading and alert dismissal, browser security flags removed, fallback page-data resource path. The parent wrapper selects the requested page and stores per-link results.
