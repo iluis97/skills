@@ -1,7 +1,7 @@
 ---
 name: code-like-me
 description: Apply personal coding preferences while preserving project conventions and interface contracts.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # code-like-me
