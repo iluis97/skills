@@ -1,6 +1,7 @@
 ---
 name: axure-reader
 description: 读取一个或一批 Axure、Axhub 原型链接，逐链接提取页面内容、批注与交互，并分别整理需求。用于原型分析、需求总结或字段及交互梳理。
+disable-model-invocation: true
 ---
 
 # Axure 原型读取与需求整理
