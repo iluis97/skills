@@ -10,7 +10,7 @@
 | 编码 | code-like-me | [中文](skills/zh-CN/coding/code-like-me/SKILL.md) | [English](skills/en/coding/code-like-me/SKILL.md) | 遵循项目约定应用个人编码偏好 | [说明](docs/coding/code-like-me/README.md) |
 | 运维 | log-analysis | [中文](skills/zh-CN/operations/log-analysis/SKILL.md) | [English](skills/en/operations/log-analysis/SKILL.md) | 按范围分析日志并提供可定位证据 | [说明](docs/operations/log-analysis/README.md) |
 | 运维 | ssh | [中文](skills/zh-CN/operations/ssh/SKILL.md) | [English](skills/en/operations/ssh/SKILL.md) | 验证 SSH 访问并指导用户配置公钥 | [说明](docs/operations/ssh/README.md) |
-| 效率 | work-summary | [中文](skills/zh-CN/productivity/work-summary/SKILL.md) | — | 按需求整理工作与预估工时，确认后保存每日 Markdown 记录 | [说明](docs/productivity/work-summary/README.md) |
+| 效率 | work-summary | [中文](skills/zh-CN/productivity/work-summary/SKILL.md) | — | 按完整需求归并工作、起止时间与工时，展示新增及修改，确认后保存每日记录 | [说明](docs/productivity/work-summary/README.md) |
 
 ## 文件职责
 
