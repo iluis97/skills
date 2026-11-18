@@ -1,0 +1,390 @@
+{
+  "version": "1.0",
+  "max_retries": 2,
+  "max_parallel_sub_developers": 6,
+  "stages": {
+    "SOLO": {
+      "role_id": "solo-developer",
+      "executor": "solo-developer",
+      "result_path": "01-solo/stage-result.json",
+      "result_required": true,
+      "artifacts": [
+        {
+          "path": "01-solo/solo-report.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 300,
+          "sections": [
+            "需求理解",
+            "简化设计",
+            "编码摘要",
+            "实际改动文件",
+            "验证命令",
+            "未运行项"
+          ]
+        },
+        {
+          "path": "workflow-summary.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 200,
+          "sections": [
+            "任务",
+            "阶段产物",
+            "代码变更",
+            "代码审查",
+            "测试",
+            "知识沉淀",
+            "风险"
+          ]
+        },
+        {
+          "path": "01-solo/api-docs.md",
+          "required": false,
+          "conditional": "api_docs_required",
+          "markdown": true,
+          "min_chars": 100,
+          "sections": [
+            "接口列表",
+            "请求",
+            "响应",
+            "错误"
+          ]
+        },
+        {
+          "path": "{artifacts_root}/knowledge/{task_slug}.md",
+          "required": false,
+          "markdown": true,
+          "min_chars": 40,
+          "sections": []
+        }
+      ],
+      "inputs": [],
+      "validators": [
+        "stage_result",
+        "api_conditional",
+        "summary"
+      ],
+      "state_paths": {
+        "artifact_path": "01-solo/solo-report.md"
+      },
+      "pass_event": "workflow_completed",
+      "fail_event": "SOLO_overflow",
+      "next_on_pass": "main",
+      "next_on_fail": "main",
+      "mark_summary": true
+    },
+    "TASK-01": {
+      "role_id": "main",
+      "executor": "main",
+      "result_path": null,
+      "result_required": false,
+      "artifacts": [
+        {
+          "path": "01-requirement/requirement-report.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 300,
+          "sections": [
+            "原始需求",
+            "代码与上下文分析",
+            "澄清 Q&A",
+            "收敛结论",
+            "纳入范围",
+            "排除范围",
+            "成功标准",
+            "影响面与风险",
+            "待确认问题"
+          ]
+        }
+      ],
+      "inputs": [],
+      "validators": [],
+      "state_paths": {
+        "artifact_path": "01-requirement/requirement-report.md"
+      },
+      "pass_event": "TASK-01_completed",
+      "next_on_pass": "architect",
+      "next_on_fail": "main",
+      "requires_user_confirmation": true
+    },
+    "TASK-02": {
+      "role_id": "architect",
+      "executor": "architect",
+      "result_path": "02-design/stage-result.json",
+      "result_required": true,
+      "artifacts": [
+        {
+          "path": "02-design/tech-design.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 500,
+          "sections": [
+            "背景与已确认需求",
+            "现状与调用链",
+            "方案概述",
+            "具体变更点",
+            "接口与数据模型",
+            "兼容性",
+            "风险与回滚",
+            "验证命令与测试策略",
+            "明确不做"
+          ]
+        },
+        {
+          "path": "02-design/execution-plan.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 300,
+          "sections": []
+        }
+      ],
+      "inputs": [
+        "01-requirement/requirement-report.md"
+      ],
+      "validators": [
+        "stage_result",
+        "execution_plan"
+      ],
+      "state_paths": {
+        "artifact_path": "02-design/tech-design.md",
+        "execution_plan_path": "02-design/execution-plan.md"
+      },
+      "pass_event": "TASK-02_completed",
+      "next_on_pass": "developer",
+      "next_on_fail": "architect"
+    },
+    "TASK-03": {
+      "role_id": "developer",
+      "executor": "developer",
+      "result_path": "03-code/stage-result.json",
+      "result_required": true,
+      "artifacts": [
+        {
+          "path": "03-code/change-report.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 400,
+          "sections": [
+            "任务和阶段",
+            "实现的 PT",
+            "实际变更文件",
+            "方案映射",
+            "Acceptance",
+            "自检",
+            "API 文档",
+            "未运行",
+            "风险"
+          ]
+        },
+        {
+          "path": "03-code/api-docs.md",
+          "required": false,
+          "conditional": "api_docs_required",
+          "markdown": true,
+          "min_chars": 100,
+          "sections": [
+            "接口列表",
+            "请求",
+            "响应",
+            "错误"
+          ]
+        }
+      ],
+      "inputs": [
+        "01-requirement/requirement-report.md",
+        "02-design/tech-design.md",
+        "02-design/execution-plan.md"
+      ],
+      "validators": [
+        "stage_result",
+        "acceptance_table",
+        "plan_scope",
+        "api_conditional"
+      ],
+      "requires_files_changed": true,
+      "state_paths": {
+        "artifact_path": "03-code/change-report.md",
+        "api_docs_path": "03-code/api-docs.md"
+      },
+      "pass_event": "TASK-03_completed",
+      "next_on_pass": "code-reviewer",
+      "next_on_fail": "developer"
+    },
+    "CODE-REVIEW": {
+      "role_id": "code-reviewer",
+      "executor": "code-reviewer",
+      "result_path": "03-code/code-review-result.json",
+      "result_required": true,
+      "artifacts": [
+        {
+          "path": "03-code/review-report.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 300,
+          "sections": [
+            "审查结论",
+            "审查文件",
+            "P0",
+            "P1",
+            "P2",
+            "前置门禁",
+            "验收条件"
+          ]
+        }
+      ],
+      "inputs": [
+        "02-design/tech-design.md",
+        "02-design/execution-plan.md",
+        "03-code/change-report.md"
+      ],
+      "validators": [
+        "stage_result",
+        "review_report"
+      ],
+      "state_paths": {
+        "artifact_path": "03-code/review-report.md"
+      },
+      "pass_event": "CODE-REVIEW_passed",
+      "fail_event": "CODE-REVIEW_failed",
+      "next_on_pass": "test-engineer",
+      "next_on_fail": "developer",
+      "failed_stage_status": "completed"
+    },
+    "TASK-04": {
+      "role_id": "test-engineer",
+      "executor": "test-engineer",
+      "result_path": "04-e2e/stage-result.json",
+      "result_required": true,
+      "artifacts": [
+        {
+          "path": "04-e2e/test-report.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 300,
+          "sections": [
+            "测试范围",
+            "实际执行命令",
+            "真实结果",
+            "未运行项",
+            "阻塞项",
+            "剩余风险"
+          ]
+        },
+        {
+          "path": "04-e2e/added-cases.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 100,
+          "sections": [
+            "新增或修改的测试文件",
+            "场景覆盖",
+            "运行前提",
+            "变更行为"
+          ]
+        }
+      ],
+      "inputs": [
+        "02-design/tech-design.md",
+        "03-code/change-report.md",
+        "03-code/review-report.md"
+      ],
+      "validators": [
+        "stage_result"
+      ],
+      "state_paths": {
+        "artifact_path": "04-e2e/test-report.md"
+      },
+      "pass_event": "TASK-04_completed",
+      "next_on_pass": "knowledge-engineer",
+      "next_on_fail": "developer"
+    },
+    "TASK-05": {
+      "role_id": "knowledge-engineer",
+      "executor": "knowledge-engineer",
+      "result_path": "05-knowledge/stage-result.json",
+      "result_required": true,
+      "artifacts": [
+        {
+          "path": "05-knowledge/knowledge-report.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 200,
+          "sections": [
+            "新增条目",
+            "合并",
+            "未沉淀",
+            "冲突"
+          ]
+        },
+        {
+          "path": "{artifacts_root}/knowledge/{task_slug}.md",
+          "required": false,
+          "markdown": true,
+          "min_chars": 40,
+          "sections": []
+        }
+      ],
+      "inputs": [
+        "01-requirement/requirement-report.md",
+        "02-design/tech-design.md",
+        "02-design/execution-plan.md",
+        "03-code/change-report.md",
+        "03-code/review-report.md",
+        "04-e2e/test-report.md"
+      ],
+      "validators": [
+        "stage_result"
+      ],
+      "state_paths": {
+        "artifact_path": "05-knowledge/knowledge-report.md"
+      },
+      "pass_event": "TASK-05_completed",
+      "next_on_pass": "leader",
+      "next_on_fail": "knowledge-engineer"
+    },
+    "SUMMARY": {
+      "role_id": "leader",
+      "executor": "leader",
+      "result_path": "stage-result.json",
+      "result_required": true,
+      "artifacts": [
+        {
+          "path": "workflow-summary.md",
+          "required": true,
+          "markdown": true,
+          "min_chars": 250,
+          "sections": [
+            "任务",
+            "阶段产物",
+            "代码变更",
+            "代码审查",
+            "测试",
+            "知识沉淀",
+            "风险"
+          ]
+        }
+      ],
+      "inputs": [
+        "01-requirement/requirement-report.md",
+        "02-design/tech-design.md",
+        "02-design/execution-plan.md",
+        "03-code/change-report.md",
+        "03-code/review-report.md",
+        "04-e2e/test-report.md",
+        "05-knowledge/knowledge-report.md"
+      ],
+      "validators": [
+        "stage_result",
+        "summary"
+      ],
+      "state_paths": {
+        "artifact_path": "workflow-summary.md"
+      },
+      "pass_event": "workflow_completed",
+      "next_on_pass": "main",
+      "next_on_fail": "leader",
+      "mark_summary": true
+    }
+  }
+}

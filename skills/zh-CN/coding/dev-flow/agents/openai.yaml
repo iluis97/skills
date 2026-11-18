@@ -1,0 +1,5 @@
+interface:
+  display_name: "DevFlow"
+  short_description: "可校验的多 Agent 需求、设计、实现、审查、测试与知识沉淀流程"
+policy:
+  allow_implicit_invocation: false

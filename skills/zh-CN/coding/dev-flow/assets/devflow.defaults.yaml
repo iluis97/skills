@@ -1,0 +1,95 @@
+# DevFlow 默认配置
+
+artifacts:
+  root_dir: "{project_root}/artifacts"
+
+solo:
+  auto_mode: true
+  max_files: 5
+
+multi:
+  auto_mode: true
+  compact_after_requirement: true
+
+max_parallel_sub_developers: 6
+
+host:
+  # 由 references/host-adapters.md 选择；auto 表示按当前宿主能力判断。
+  adapter: auto
+
+manual_gates:
+  - TASK-02_completed
+  - CODE-REVIEW_passed
+  - TASK-04_completed
+
+knowledge:
+  global_dir: "{project_root}/artifacts/knowledge"
+
+# 角色注册表和角色提示均位于技能包内。
+roles:
+  registry: "assets/roles.json"
+  default_context_mode: isolated
+  model_inherit: inherit
+  on_spawn_error: inherit
+
+contracts:
+  stage_contracts: "assets/stage-contracts.json"
+  stage_result_schema: "assets/stage-result.schema.json"
+  workflow_script: "scripts/workflow.py"
+  state_version: "2.0"
+
+retry:
+  max_retries: 2
+  artifact_invalid: same_role_once
+  provider_error: record_and_retry
+  model_capability_error: keep_model_use_compatible_effort
+  test_failed: developer
+  review_rejected: developer
+  user_gate: main
+
+# 兼容性展示；workflow.py 运行时以 stage-contracts.json 的
+# pass_event/next_on_pass/fail_event/next_on_fail 为准。
+routing_table:
+  workflow_initialized_small: solo-developer
+  workflow_initialized_other: main
+  TASK-01_completed: architect
+  SOLO_failed: solo-developer
+  SOLO_overflow: main
+  TASK-02_completed: developer
+  TASK-02_failed: architect
+  TASK-03_completed: code-reviewer
+  TASK-03_failed: developer
+  CODE-REVIEW_passed: test-engineer
+  CODE-REVIEW_failed: developer
+  TASK-04_completed: knowledge-engineer
+  TASK-04_failed: test-engineer
+  TASK-05_completed: leader
+  TASK-05_failed: knowledge-engineer
+  workflow_completed: main
+  workflow_aborted: main
+
+global_agent_rules: |
+  【DevFlow 全局规则】
+  1. 每个阶段开始前读取 workflow-state.json。
+  2. 只读取已安装技能包内的资料，不依赖仓库外的临时工作流资产。
+  3. 不使用其他工作流状态机或宿主专有的团队编排原语替代本流程。
+  4. 阶段角色只写业务产物和 stage-result.json，不得修改 workflow-state.json。
+  5. 所有状态写入必须通过 scripts/workflow.py。
+  6. 阶段完成前必须运行 workflow.py validate；失败时不得 complete。
+  7. 主线程根据 complete/fail 返回的 next_target 决定下一阶段。
+  8. 阶段结果使用 assets/stage-result.schema.json；禁止回传大段源码或完整日志。
+  9. 阶段派发前解析 assets/roles.json，并用 workflow.py handoff 生成任务卡。
+  10. 设置模型或推理强度时使用隔离上下文；不兼容时优先修正推理档。
+
+team_members:
+  - leader
+  - architect
+  - developer
+  - code-reviewer
+  - test-engineer
+  - knowledge-engineer
+  - solo-developer
+
+dependencies:
+  skills: []
+  mcp_tools: []

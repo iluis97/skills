@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Stage Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "stage",
+    "role_id",
+    "status",
+    "artifacts",
+    "checks",
+    "risks",
+    "last_error"
+  ],
+  "properties": {
+    "stage": {
+      "type": "string",
+      "enum": [
+        "SOLO",
+        "TASK-02",
+        "TASK-03",
+        "CODE-REVIEW",
+        "TASK-04",
+        "TASK-05",
+        "SUMMARY"
+      ]
+    },
+    "role_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "blocked"
+      ]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "result"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "not-run",
+              "blocked"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "api_docs_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "review_result": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 2000
+    },
+    "error_class": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "artifact_invalid",
+        "scope_violation",
+        "provider_error",
+        "model_capability_error",
+        "test_failed",
+        "review_rejected",
+        "user_gate",
+        "agent_runtime_error",
+        "unknown"
+      ]
+    }
+  }
+}

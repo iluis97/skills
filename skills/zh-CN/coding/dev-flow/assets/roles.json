@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "defaults": {
+    "model": "inherit",
+    "reasoning_effort": "inherit",
+    "context_mode": "isolated",
+    "on_spawn_error": "inherit"
+  },
+  "model_profiles": {
+    "volcengine/glm-5.3-flash": {
+      "reasoning_efforts": [
+        "low",
+        "high",
+        "max"
+      ],
+      "fallback_reasoning_effort": "high"
+    }
+  },
+  "roles": {
+    "architect": {
+      "stage": "TASK-02",
+      "prompt": "references/roles/architect.md",
+      "reasoning_effort": "high",
+      "context_mode": "isolated"
+    },
+    "developer": {
+      "stage": "TASK-03",
+      "prompt": "references/roles/developer.md",
+      "reasoning_effort": "medium",
+      "context_mode": "isolated"
+    },
+    "code-reviewer": {
+      "stage": "CODE-REVIEW",
+      "prompt": "references/roles/code-reviewer.md",
+      "reasoning_effort": "high",
+      "context_mode": "isolated"
+    },
+    "test-engineer": {
+      "stage": "TASK-04",
+      "prompt": "references/roles/test-engineer.md",
+      "reasoning_effort": "high",
+      "context_mode": "isolated"
+    },
+    "knowledge-engineer": {
+      "stage": "TASK-05",
+      "prompt": "references/roles/knowledge-engineer.md",
+      "reasoning_effort": "medium",
+      "context_mode": "isolated"
+    },
+    "leader": {
+      "stage": "SUMMARY",
+      "prompt": "references/roles/leader.md",
+      "reasoning_effort": "medium",
+      "context_mode": "isolated"
+    },
+    "solo-developer": {
+      "stage": "SOLO",
+      "prompt": "references/roles/solo-developer.md",
+      "reasoning_effort": "medium",
+      "context_mode": "isolated"
+    }
+  }
+}
