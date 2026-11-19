@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dev Workflow"
+  short_description: "围绕用户目标组织调研规划、按需委派、实现与核验，识别规模并维护轻量任务记录"
+  default_prompt: "使用 $dev-workflow 围绕我的目标完成调研、方案、实现和验证，并展示真实成果。"
+policy:
+  allow_implicit_invocation: false

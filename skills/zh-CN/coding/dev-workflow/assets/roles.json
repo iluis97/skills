@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "model": "inherit",
+    "reasoning_effort": "inherit"
+  },
+  "roles": {
+    "owner": {
+      "model": "inherit",
+      "reasoning_effort": "inherit"
+    },
+    "planner": {
+      "model": "inherit",
+      "reasoning_effort": "high"
+    },
+    "builder": {
+      "model": "inherit",
+      "reasoning_effort": "medium"
+    },
+    "verifier": {
+      "model": "inherit",
+      "reasoning_effort": "high"
+    }
+  }
+}
