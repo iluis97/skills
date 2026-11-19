@@ -9,6 +9,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from uuid import uuid4
 
 from role_registry import RegistryError, find_role, load_registry
 
@@ -751,6 +752,7 @@ def role_settings_for_stage(
     effort = effort_override or target["reasoning_effort"]
     model_source = "user" if model_override else target["model_source"]
     effort_source = "user" if effort_override else target["reasoning_effort_source"]
+    configured = {"model": model, "reasoning_effort": effort}
     compatibility = target.get("model_compatibility", {})
     profile = target.get("model_profile")
     if target["model"] != model:
@@ -777,6 +779,7 @@ def role_settings_for_stage(
         raise WorkflowError("覆盖模型时必须使用 isolated 上下文")
     return {
         "role_id": target["role_id"],
+        "configured": configured,
         "model": model,
         "reasoning_effort": effort,
         "context_mode": target["context_mode"],
@@ -955,6 +958,15 @@ def command_status(args: argparse.Namespace) -> dict:
         stages[stage] = {
             "status": entry.get("status"),
             "role_id": entry.get("role_id"),
+            "agent_handle": entry.get("agent_handle"),
+            "model": entry.get("model"),
+            "reasoning_effort": entry.get("reasoning_effort"),
+            "execution": entry.get("execution"),
+            "notice": (
+                execution_notice(stage, entry["role_id"], entry["execution"])
+                if entry.get("execution") else None
+            ),
+            "configuration_only": "execution" not in entry,
             "retry_count": entry.get("retry_count", 0),
             "attempt": entry.get("attempt", 0),
             "result_exists": result_exists,
@@ -963,7 +975,7 @@ def command_status(args: argparse.Namespace) -> dict:
                 artifact_path and Path(artifact_path).exists()
             ),
         }
-    return {
+    result = {
         "task_slug": state["task_slug"],
         "size_class": state.get("size_class"),
         "current_stage": state.get("current_stage"),
@@ -975,6 +987,14 @@ def command_status(args: argparse.Namespace) -> dict:
         "summary": state.get("summary"),
         "stages": stages,
     }
+    if getattr(args, "details", False):
+        result["decisions"] = state.get("decisions", [])
+        result["dispatch_plans"] = {
+            stage: entry["dispatch_plan"]
+            for stage, entry in state["stages"].items()
+            if "dispatch_plan" in entry
+        }
+    return result
 
 
 def command_handoff(args: argparse.Namespace, contracts: dict) -> str:
@@ -992,9 +1012,16 @@ def command_handoff(args: argparse.Namespace, contracts: dict) -> str:
     dependency_errors = validate_dependencies(state, args.stage)
     if dependency_errors:
         raise WorkflowError("; ".join(dependency_errors))
-    if contract["role_id"] == "main":
+    if args.stage in {"TASK-01", "SOLO"}:
+        if args.model or args.reasoning_effort:
+            raise WorkflowError("主线程阶段沿用当前会话，不通过 handoff 覆盖模型或推理等级")
         settings = {
-            "role_id": "main",
+            "role_id": contract["role_id"],
+            "configured": (
+                role_settings_for_stage(args.stage, DEFAULT_ROLES, None, None)["configured"]
+                if args.stage == "SOLO"
+                else {"model": "inherit", "reasoning_effort": "inherit"}
+            ),
             "model": "inherit",
             "reasoning_effort": "inherit",
             "context_mode": "n/a",
@@ -1006,6 +1033,11 @@ def command_handoff(args: argparse.Namespace, contracts: dict) -> str:
             args.model,
             args.reasoning_effort,
         )
+    dispatch_plan = {
+        **settings,
+        "dispatch_id": uuid4().hex,
+        "prepared_at": utc_now(),
+    }
     missing_inputs = []
     for input_ref in contract.get("inputs", []):
         input_path = format_path(input_ref, state)
@@ -1041,10 +1073,16 @@ def command_handoff(args: argparse.Namespace, contracts: dict) -> str:
         f"- SKILL_DIR: `{SKILL_ROOT}`",
         f"- workflow_state_path: `{args.state}`",
         f"- role_id: `{settings['role_id']}`",
+        f"- dispatch_id: `{dispatch_plan['dispatch_id']}`",
         f"- model: `{settings['model']}`",
         f"- reasoning_effort: `{settings['reasoning_effort']}`",
         f"- context_mode: `{settings['context_mode']}`",
         f"- result_path: `{result_path or '不适用'}`",
+        "",
+        "## 执行配置快照",
+        "```json",
+        json.dumps(dispatch_plan, ensure_ascii=False, indent=2),
+        "```",
         "",
         "## 必需产物",
         artifact_lines or "- 无",
@@ -1069,8 +1107,114 @@ def command_handoff(args: argparse.Namespace, contracts: dict) -> str:
         output_path = Path(args.output).resolve()
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(output, encoding="utf-8")
-        return str(output_path)
-    return output
+    stage_state(state, args.stage)["dispatch_plan"] = dispatch_plan
+    append_decision(
+        state,
+        {"kind": "dispatch_prepared", "stage": args.stage, "dispatch_plan": dispatch_plan},
+    )
+    save_state(Path(args.state).resolve(), state)
+    return str(Path(args.output).resolve()) if args.output else output
+
+
+def read_submitted_request(path: str) -> dict:
+    submitted = read_json(Path(path).resolve())
+    allowed = {
+        "model", "reasoning_effort", "context_mode", "agent_type", "host_metadata",
+    }
+    if set(submitted) - allowed:
+        raise WorkflowError("request-file 只保留执行参数，不包含提示词或其他工具参数")
+    if submitted.get("context_mode") not in {"isolated", "inherit"}:
+        raise WorkflowError("request-file 必须记录实际 context_mode")
+    for field in ("model", "reasoning_effort", "agent_type"):
+        if field in submitted and (
+            not isinstance(submitted[field], str)
+            or not submitted[field].strip()
+            or submitted[field].strip() == "inherit"
+        ):
+            raise WorkflowError(f"request-file.{field} 必须是实际提交的具体值；继承时省略")
+    if "host_metadata" in submitted and not isinstance(submitted["host_metadata"], dict):
+        raise WorkflowError("request-file.host_metadata 必须为对象")
+    return submitted
+
+
+def read_runtime_report(args: argparse.Namespace, previous: Optional[dict] = None) -> dict:
+    report = dict(previous or {"model": None, "reasoning_effort": None})
+    source = getattr(args, "report_source", None)
+    for field in ("model", "reasoning_effort"):
+        value = getattr(args, f"reported_{field}", None)
+        if value is not None:
+            if not value.strip() or value.strip() == "inherit" or not source or not source.strip():
+                raise WorkflowError("宿主回报必须是具体值，并提供 --report-source 证据来源")
+            report[field] = {"value": value, "source": source}
+    return report
+
+
+def execution_notice(stage: str, role_id: str, execution: dict) -> str:
+    mode = execution["mode"]
+    if mode == "sub_agent":
+        executor = f"Agent {execution['agent_handle']}"
+        if execution.get("agent_type"):
+            executor += f"（{execution['agent_type']}）"
+    else:
+        executor = "主线程" if mode == "main_thread" else "主线程（内联降级）"
+    values = []
+    submitted = execution["submitted"]
+    for field, label in (("model", "模型"), ("reasoning_effort", "推理")):
+        reported = execution["reported"].get(field)
+        if reported:
+            value = f"{reported['value']}（已确认）"
+        elif submitted is None:
+            value = "未知（仅有配置）"
+        elif field in submitted:
+            value = f"{submitted[field]}（已提交）"
+        else:
+            value = "继承（未知）"
+        values.append(f"{label}：{value}")
+    notice = f"[{stage}] {role_id} · {executor} · " + " · ".join(values)
+    return " ".join(notice.split())
+
+
+def start_stage_execution(
+    state: dict, stage: str, contract: dict, host: str, execution: dict,
+) -> None:
+    entry = stage_state(state, stage)
+    if entry.get("status") in {"completed", "passed", "cancelled", "skipped"}:
+        raise WorkflowError(f"{stage} 当前状态为 {entry['status']}，不能登记新的执行")
+    now = utc_now()
+    entry.update(
+        {
+            "status": "in_progress",
+            "executor": contract["executor"],
+            "role_id": contract["role_id"],
+            "host": host,
+            "agent_handle": execution.get("agent_handle"),
+            "execution": execution,
+            "host_metadata": (execution["submitted"] or {}).get("host_metadata", {}),
+            "started_at": entry.get("started_at") or now,
+            "finished_at": None,
+            "completed_at": None,
+            "validation": None,
+            "artifact_path": None,
+            "artifact_paths": [],
+            "self_check": None,
+            "attempt": max(
+                int(entry.get("attempt", 0)) + 1,
+                int(entry.get("retry_count", 0)) + 1,
+            ),
+        }
+    )
+    state["current_stage"] = stage
+    state["last_event"] = f"{stage}_in_progress"
+    state["next_target"] = contract["role_id"]
+    state["last_error"] = None
+    state["last_error_class"] = None
+    state["last_transition"] = {
+        "stage": stage,
+        "result": "in_progress",
+        "event": f"{stage}_in_progress",
+        "next_target": contract["role_id"],
+        "at": now,
+    }
 
 
 def command_record_spawn(args: argparse.Namespace, contracts: dict) -> dict:
@@ -1081,63 +1225,77 @@ def command_record_spawn(args: argparse.Namespace, contracts: dict) -> dict:
     if args.stage not in contracts["stages"]:
         raise WorkflowError(f"未知阶段 {args.stage}")
     contract = contracts["stages"][args.stage]
-    if contract["role_id"] == "main":
-        raise WorkflowError("main 阶段不派发角色 Agent")
+    if not args.handle.strip():
+        raise WorkflowError("Agent 句柄不能为空")
+    if args.stage in {"TASK-01", "SOLO"}:
+        raise WorkflowError("TASK-01 和 SOLO 由主线程执行，不派发角色 Agent")
     dependency_errors = validate_dependencies(state, args.stage)
     if dependency_errors:
         raise WorkflowError("; ".join(dependency_errors))
-    settings = role_settings_for_stage(
-        args.stage,
-        DEFAULT_ROLES,
-        args.model,
-        args.reasoning_effort,
-    )
     entry = stage_state(state, args.stage)
-    if entry.get("status") in {"completed", "passed", "cancelled", "skipped"}:
-        raise WorkflowError(
-            f"{args.stage} 当前状态为 {entry.get('status')}，不能登记新的 spawn"
-        )
-    now = utc_now()
-    entry.update(
-        {
-            "status": "in_progress",
-            "executor": contract["executor"],
-            "role_id": settings["role_id"],
-            "host": args.host,
-            "agent_handle": args.handle,
-            "model": settings["model"],
-            "reasoning_effort": settings["reasoning_effort"],
-            "context_mode": settings["context_mode"],
-            "model_source": settings["model_source"],
-            "reasoning_effort_source": settings["reasoning_effort_source"],
-            "fallback": settings["fallback"],
-            "started_at": entry.get("started_at") or now,
-            "finished_at": None,
-            "completed_at": None,
-            "validation": None,
-            "artifact_path": None,
-            "artifact_paths": [],
-            "self_check": None,
-            "attempt": max(
-                int(entry.get("attempt", 0)),
-                int(entry.get("retry_count", 0)) + 1,
-            ),
+    dispatch_id = getattr(args, "dispatch_id", None)
+    request_file = getattr(args, "request_file", None)
+    reason = getattr(args, "fallback_reason", None)
+    submitted = None
+    if dispatch_id or request_file:
+        if not dispatch_id or not request_file:
+            raise WorkflowError("派发审计需同时提供 --dispatch-id 和 --request-file")
+        settings = entry.get("dispatch_plan", {})
+        if settings.get("dispatch_id") != dispatch_id:
+            raise WorkflowError("派发快照已失效，请使用最近一次 handoff 的 dispatch_id")
+        if args.model or args.reasoning_effort:
+            raise WorkflowError("使用派发快照时不再通过 --model/--reasoning-effort 重新解析配置")
+        if (
+            entry.get("execution", {}).get("dispatch_id") == dispatch_id
+            or entry.get("failed_dispatch_id") == dispatch_id
+        ):
+            raise WorkflowError("该派发快照已经执行或失败；重试前须重新 handoff")
+        submitted = read_submitted_request(request_file)
+        expected = {
+            field: settings[field]
+            for field in ("model", "reasoning_effort", "context_mode")
+            if settings[field] != "inherit" or field == "context_mode"
         }
-    )
-    if args.fork_turns:
-        entry["host_metadata"] = {"fork_turns": args.fork_turns}
-    state["current_stage"] = args.stage
-    state["last_event"] = f"{args.stage}_in_progress"
-    state["next_target"] = settings["role_id"]
-    state["last_error"] = None
-    state["last_error_class"] = None
-    state["last_transition"] = {
-        "stage": args.stage,
-        "result": "in_progress",
-        "event": f"{args.stage}_in_progress",
-        "next_target": settings["role_id"],
-        "at": now,
+        actual = {
+            field: submitted[field]
+            for field in ("model", "reasoning_effort", "context_mode")
+            if field in submitted
+        }
+        if actual != expected and not (reason and reason.strip()):
+            raise WorkflowError("实际提交参数与派发快照不一致，需提供 --fallback-reason")
+        if (
+            any(field in submitted for field in ("model", "reasoning_effort"))
+            and submitted["context_mode"] != "isolated"
+        ):
+            raise WorkflowError("覆盖模型或推理强度时必须使用 isolated 上下文")
+    else:
+        # 兼容旧调用：这些值只有配置依据，不能标为实际提交。
+        settings = role_settings_for_stage(
+            args.stage, DEFAULT_ROLES, args.model, args.reasoning_effort,
+        )
+    if entry.get("agent_handle") == args.handle:
+        raise WorkflowError("该 Agent 句柄已登记；宿主回报使用 record-runtime 更新")
+    fallback = bool(settings["fallback"] or reason)
+    execution = {
+        "mode": "sub_agent",
+        "dispatch_id": dispatch_id,
+        "agent_handle": args.handle,
+        "agent_type": submitted.get("agent_type") if submitted is not None else None,
+        "configured": settings["configured"],
+        "submitted": submitted,
+        "reported": read_runtime_report(args),
+        "fallback_reason": reason or (
+            "model_profiles 兼容推理档" if settings["fallback"] else None
+        ),
     }
+    start_stage_execution(state, args.stage, contract, args.host, execution)
+    for field in (
+        "model", "reasoning_effort", "context_mode", "model_source", "reasoning_effort_source",
+    ):
+        entry[field] = settings[field]
+    entry["fallback"] = fallback
+    if submitted is None and args.fork_turns:
+        entry["host_metadata"] = {"fork_turns": args.fork_turns}
     append_decision(
         state,
         {
@@ -1149,13 +1307,15 @@ def command_record_spawn(args: argparse.Namespace, contracts: dict) -> dict:
             "model": settings["model"],
             "reasoning_effort": settings["reasoning_effort"],
             "context_mode": settings["context_mode"],
-            "fork_turns": args.fork_turns,
+            "fork_turns": entry["host_metadata"].get("fork_turns"),
             "model_source": settings["model_source"],
             "reasoning_effort_source": settings["reasoning_effort_source"],
-            "fallback": settings["fallback"],
+            "fallback": fallback,
+            "attempt": entry["attempt"],
+            "execution": execution,
         },
     )
-    if settings["fallback"]:
+    if fallback:
         append_decision(
             state,
             {
@@ -1165,7 +1325,9 @@ def command_record_spawn(args: argparse.Namespace, contracts: dict) -> dict:
                 "role_id": settings["role_id"],
                 "model": settings["model"],
                 "reasoning_effort": settings["reasoning_effort"],
-                "fallback": "compatible_reasoning_effort",
+                "execution": execution,
+                "fallback": "runtime_configuration_changed",
+                "reason": execution["fallback_reason"],
             },
         )
     save_state(state_path, state)
@@ -1176,7 +1338,96 @@ def command_record_spawn(args: argparse.Namespace, contracts: dict) -> dict:
         "agent_handle": args.handle,
         "model": settings["model"],
         "reasoning_effort": settings["reasoning_effort"],
-        "fallback": settings["fallback"],
+        "fallback": fallback,
+        "execution": execution,
+        "notice": execution_notice(args.stage, contract["role_id"], execution),
+    }
+
+
+def command_record_execution(args: argparse.Namespace, contracts: dict) -> dict:
+    state_path = Path(args.state).resolve()
+    state = load_state(state_path)
+    if state.get("size_class") not in {"small", "medium", "large"}:
+        raise WorkflowError("请先运行 classify")
+    if args.stage not in contracts["stages"]:
+        raise WorkflowError(f"未知阶段 {args.stage}")
+    contract = contracts["stages"][args.stage]
+    errors = validate_dependencies(state, args.stage)
+    if errors:
+        raise WorkflowError("; ".join(errors))
+    is_main_stage = args.stage in {"TASK-01", "SOLO"}
+    if (args.mode == "main_thread") != is_main_stage:
+        raise WorkflowError("main_thread 仅用于 TASK-01/SOLO，其他阶段须使用 inline 并记录不可用原因")
+    if args.mode == "inline" and not (args.reason and args.reason.strip()):
+        raise WorkflowError("内联降级必须提供子 Agent 不可用的实际原因")
+    plan = state["stages"][args.stage].get("dispatch_plan")
+    if args.stage == "TASK-01":
+        configured = {"model": "inherit", "reasoning_effort": "inherit"}
+    elif plan:
+        configured = plan["configured"]
+    else:
+        configured = role_settings_for_stage(
+            args.stage, DEFAULT_ROLES, None, None,
+        )["configured"]
+    execution = {
+        "mode": args.mode,
+        "dispatch_id": plan["dispatch_id"] if plan else None,
+        "agent_handle": None,
+        "agent_type": None,
+        "configured": configured,
+        "submitted": {},
+        "reported": read_runtime_report(args),
+        "fallback_reason": args.reason,
+    }
+    start_stage_execution(state, args.stage, contract, args.host, execution)
+    state["stages"][args.stage].update({
+        "model": "inherit",
+        "reasoning_effort": "inherit",
+        "context_mode": "n/a",
+        "model_source": "parent",
+        "reasoning_effort_source": "parent",
+        "fallback": args.mode == "inline",
+    })
+    append_decision(state, {
+        "kind": "execution_started",
+        "stage": args.stage,
+        "role_id": contract["role_id"],
+        "host": args.host,
+        "attempt": state["stages"][args.stage]["attempt"],
+        "execution": execution,
+    })
+    if args.mode == "inline":
+        append_decision(state, {
+            "kind": "agent_spawn_unavailable", "stage": args.stage,
+            "role_id": contract["role_id"], "reason": args.reason,
+        })
+    save_state(state_path, state)
+    return {
+        "stage": args.stage,
+        "execution": execution,
+        "notice": execution_notice(args.stage, contract["role_id"], execution),
+    }
+
+
+def command_record_runtime(args: argparse.Namespace) -> dict:
+    state_path = Path(args.state).resolve()
+    state = load_state(state_path)
+    entry = state["stages"].get(args.stage, {})
+    previous = entry.get("execution")
+    if not previous:
+        raise WorkflowError("该阶段尚未登记执行，不能补记宿主回报")
+    if previous["mode"] == "sub_agent" and args.handle != previous["agent_handle"]:
+        raise WorkflowError("Agent 句柄与当前执行不匹配，不得覆盖其他尝试的回报")
+    if not args.reported_model and not args.reported_reasoning_effort:
+        raise WorkflowError("至少提供一项宿主实际回报")
+    execution = {**previous, "reported": read_runtime_report(args, previous["reported"])}
+    entry["execution"] = execution
+    append_decision(state, {"kind": "runtime_reported", "stage": args.stage, "execution": execution})
+    save_state(state_path, state)
+    return {
+        "stage": args.stage,
+        "execution": execution,
+        "notice": execution_notice(args.stage, entry["role_id"], execution),
     }
 
 
@@ -1392,6 +1643,20 @@ def command_fail(args: argparse.Namespace, contracts: dict) -> dict:
     contract = contracts["stages"][stage]
     max_retries = int(contracts.get("max_retries", 2))
     entry = stage_state(state, stage)
+    submitted = None
+    request_file = getattr(args, "request_file", None)
+    dispatch_id = getattr(args, "dispatch_id", None)
+    if request_file or dispatch_id:
+        if not request_file or not dispatch_id:
+            raise WorkflowError("派发失败审计需同时提供 --dispatch-id 和 --request-file")
+        if entry.get("dispatch_plan", {}).get("dispatch_id") != dispatch_id:
+            raise WorkflowError("派发快照已失效，不能将失败登记到其他尝试")
+        if entry.get("failed_dispatch_id") == dispatch_id:
+            raise WorkflowError("该派发失败已登记；重试前须重新 handoff")
+        if entry.get("execution", {}).get("dispatch_id") == dispatch_id:
+            raise WorkflowError("该派发已有真实句柄；运行失败使用 fail，不再附派发请求文件")
+        submitted = read_submitted_request(request_file)
+        entry["failed_dispatch_id"] = dispatch_id
     status = args.status
     if args.error_class in {"scope_violation", "user_gate"}:
         status = "blocked"
@@ -1448,6 +1713,9 @@ def command_fail(args: argparse.Namespace, contracts: dict) -> dict:
             "error_class": args.error_class,
             "next_target": next_target,
             "reason": args.error,
+            "dispatch_plan": entry.get("dispatch_plan"),
+            "execution": entry.get("execution") if submitted is None else None,
+            "submitted": submitted,
         },
     )
     if args.error_class == "model_capability_error":
@@ -1548,6 +1816,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     status = subparsers.add_parser("status", help="只读查看状态")
     status.add_argument("--state", required=True)
+    status.add_argument("--details", action="store_true", help="展开派发快照、历史尝试与降级记录")
 
     classify = subparsers.add_parser("classify", help="记录 Phase 0 规模判定")
     classify.add_argument("--state", required=True)
@@ -1569,6 +1838,25 @@ def build_parser() -> argparse.ArgumentParser:
     spawn.add_argument("--model")
     spawn.add_argument("--reasoning-effort")
     spawn.add_argument("--fork-turns")
+    spawn.add_argument("--dispatch-id")
+    spawn.add_argument("--request-file", help="从真实宿主调用提取的执行参数 JSON")
+    spawn.add_argument("--fallback-reason")
+
+    execution = subparsers.add_parser("record-execution", help="登记主线程或内联降级执行")
+    execution.add_argument("--state", required=True)
+    execution.add_argument("--stage", required=True)
+    execution.add_argument("--mode", required=True, choices=["main_thread", "inline"])
+    execution.add_argument("--host", default="codex")
+    execution.add_argument("--reason")
+
+    runtime = subparsers.add_parser("record-runtime", help="补记当前执行的宿主回报")
+    runtime.add_argument("--state", required=True)
+    runtime.add_argument("--stage", required=True)
+    runtime.add_argument("--handle")
+    for command_parser in (spawn, execution, runtime):
+        command_parser.add_argument("--reported-model")
+        command_parser.add_argument("--reported-reasoning-effort")
+        command_parser.add_argument("--report-source", help="宿主响应字段、查询结果或日志证据位置")
 
     confirm = subparsers.add_parser("confirm", help="记录用户需求确认")
     confirm.add_argument("--state", required=True)
@@ -1589,6 +1877,8 @@ def build_parser() -> argparse.ArgumentParser:
     fail.add_argument("--error-class", required=True)
     fail.add_argument("--error", required=True)
     fail.add_argument("--next-target")
+    fail.add_argument("--dispatch-id")
+    fail.add_argument("--request-file")
     fail.add_argument("--status", default="failed", choices=["failed", "blocked"])
 
     abort = subparsers.add_parser("abort", help="中止工作流并保留产物")
@@ -1623,6 +1913,14 @@ def main() -> int:
             return 0
         if args.command == "record-spawn":
             result = command_record_spawn(args, contracts)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
+        if args.command == "record-execution":
+            result = command_record_execution(args, contracts)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
+        if args.command == "record-runtime":
+            result = command_record_runtime(args)
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0
         if args.command == "confirm":

@@ -29,6 +29,7 @@
 | `01-solo/` | solo-developer |
 
 TASK-03 需要给后续阶段准备素材时写入 `03-code/*-draft.md` 或 `03-code/*-source.md`。
+主线程可在当前阶段目录写入任务卡和 `spawn-request-<dispatch_id>.json` 执行审计文件；阶段角色不得改写这些记录。
 
 每个阶段同时在拥有目录中写入 `stage-result.json` 或契约指定的结果文件，格式遵循 `assets/stage-result.schema.json`。
 

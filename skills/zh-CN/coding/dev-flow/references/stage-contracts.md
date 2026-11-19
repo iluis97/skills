@@ -89,6 +89,7 @@
 | `{artifacts_root}/knowledge/` | solo-developer、knowledge-engineer |
 
 阶段结果文件写入对应阶段目录。SUMMARY 的阶段结果写入 `artifacts_dir/stage-result.json`。
+主线程的任务卡与 `spawn-request-<dispatch_id>.json` 属于执行审计文件，可写入当前阶段目录，阶段角色不改写；详见 [execution-reporting.md](execution-reporting.md)。
 
 ## 扩展
 

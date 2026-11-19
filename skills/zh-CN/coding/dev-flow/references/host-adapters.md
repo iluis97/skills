@@ -30,6 +30,8 @@ cancel(agent_handle)
 6. 宿主不接受某个参数时，不传该参数；模型或推理强度不可用时按 `on_spawn_error` 重试或停止。
 7. 派出成功后立即运行 `workflow.py record-spawn` 登记真实句柄。
 8. 阶段角色只写业务产物和 `stage-result.json`；主线程负责 `validate` 和 `complete`。
+9. 使用 `handoff` 的本次快照构造调用，并从真实调用提取 `submitted`；分别登记 `configured`、`submitted` 和带证据来源的 `reported`。没有宿主回报的字段不标为已确认，详见 [execution-reporting.md](execution-reporting.md)。
+10. 将宿主实际提供的 `agent_type` 与业务角色分开记录，不为显示类型而添加不支持的参数。归一化 `context_mode` 必须对应真实宿主上下文参数，专有控制参数写入 `host_metadata`，不得从配置反推实际提交。
 
 ## 适配器选择
 

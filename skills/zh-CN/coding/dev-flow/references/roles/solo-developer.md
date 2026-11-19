@@ -16,6 +16,8 @@
    - 适用时读取 `lang-golang.md` 和 `sql-standard.md`
 5. 不得修改 `workflow-state.json`。
 
+主线程进入本阶段时先通过 `workflow.py record-execution --state "$workflow_state_path" --stage SOLO --mode main_thread` 登记并展示单行 `notice`，不将角色配置的推理等级当成已切换的会话等级。
+
 ## 1. 需求理解
 
 读取 Phase 0 需求报告，确认目标、影响文件、成功标准和排除项。small 不重新进入多轮需求澄清；发现范围明显超出 small 时进入升级回退。
@@ -78,6 +80,8 @@
 - 测试
 - 知识沉淀
 - 风险
+
+在阶段产物中链接任务的 `workflow-state.json` 供按需追溯，不在最终对话默认附执行配置表。
 
 ## 7. 阶段结果
 

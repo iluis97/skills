@@ -41,6 +41,7 @@ $dev-flow abort <TASK_SLUG>
 - 机器契约说明：`references/stage-contracts.md`
 - 角色配置：`assets/roles.json`
 - 宿主适配：`references/host-adapters.md`
+- 执行记录与对话播报：阶段启动前读取 `references/execution-reporting.md`
 - 当前角色：`references/roles/<role>.md`
 - 当前阶段规则：`references/rules/`
 - 代码审查门禁：`references/checklists/gate-code-review.md`
@@ -65,7 +66,9 @@ python3 "$SKILL_DIR/scripts/workflow.py" handoff \
 
 python3 "$SKILL_DIR/scripts/workflow.py" record-spawn \
   --state "$workflow_state_path" --stage TASK-02 \
-  --handle "<agent-handle>" --host codex
+  --handle "<agent-handle>" --host codex \
+  --dispatch-id "<handoff 的 dispatch_id>" \
+  --request-file "<本次实际提交参数 JSON>"
 
 python3 "$SKILL_DIR/scripts/workflow.py" validate \
   --state "$workflow_state_path" --stage TASK-02
@@ -85,12 +88,12 @@ python3 "$SKILL_DIR/scripts/workflow.py" fail \
 ## 主流程
 
 1. Phase 0：主线程分析需求、代码、测试入口和影响面，判定 `small`、`medium` 或 `large`，并运行 `classify` 记录结果。
-2. `small`：初始化后进入 SOLO，由主线程完成实现、验证、知识沉淀和总结。
-3. `medium` / `large`：TASK-01 先完成需求澄清和用户确认。
+2. `small`：初始化后进入 SOLO，用 `record-execution --mode main_thread` 登记主线程执行，再完成实现、验证、知识沉淀和总结。
+3. `medium` / `large`：TASK-01 用 `record-execution --mode main_thread` 登记后，由主线程完成需求澄清和用户确认。
 4. TASK-02 起：
    - 用 `handoff` 生成阶段任务卡。
    - 解析角色配置并用宿主原生子 Agent 能力派发。
-   - 成功后用 `record-spawn` 登记真实句柄和模型审计。
+   - 成功后用 `record-spawn` 登记本次快照、真实句柄、实际提交参数及可用的宿主回报。
    - 子 Agent 写业务产物和 `stage-result.json`，不写状态。
    - 主线程运行 `validate`，通过后运行 `complete`。
 5. 校验失败：`complete` 不写状态；主线程根据错误摘要重试或运行 `fail`。
@@ -133,6 +136,14 @@ python3 "$SKILL_DIR/scripts/role_registry.py" resolve TASK-02
 只有 `model != "inherit"` 时才传模型，只有 `reasoning_effort != "inherit"` 时才传推理强度。覆盖任一配置时使用隔离上下文。
 
 模型不支持配置的推理档时，优先使用 `model_profiles` 的兼容档位并保留用户指定模型；不要静默换模型。
+
+## 简洁播报
+
+- 主线程在阶段启动后展示登记命令返回的 `notice`：一行说明角色、真实 Agent 或主线程、模型、推理等级及确认依据。
+- 配置要求、实际提交和宿主回报分别落盘；只有宿主明确回报的字段才标“已确认”，仅提交参数标“已提交”，继承或缺少依据时如实显示未知。
+- 普通进度不重复身份；重试或降级补充一句配置变化与原因。结束简述结果，最终回复不默认附执行配置表。
+- TASK-01、SOLO 和内联降级不得宣称已按角色配置切换主线程模型或推理等级。
+- 详情按用户查询范围读取 `status`，历史尝试与证据按需使用 `status --details`。完整规则见 `references/execution-reporting.md`。
 
 ## 错误分类
 

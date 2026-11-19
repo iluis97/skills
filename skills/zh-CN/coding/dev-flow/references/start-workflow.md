@@ -22,6 +22,7 @@
 6. `references/rules/global.md`
 7. `references/host-adapters.md`
 8. 当前宿主适配器
+9. `references/execution-reporting.md`（派发审计和对话简洁播报）
 
 检查仓库根、分支、工作区状态和项目指令。不要切换项目，不清理用户改动。
 
@@ -76,8 +77,8 @@ python3 "$SKILL_DIR/scripts/workflow.py" classify \
 
 ## Step 3 路由
 
-- `small`：进入 SOLO。
-- `medium/large`：进入 TASK-01。
+- `small`：进入 SOLO，先用 `record-execution --stage SOLO --mode main_thread` 登记并播报。
+- `medium/large`：进入 TASK-01，先用 `record-execution --stage TASK-01 --mode main_thread` 登记并播报。上述命令均需 `--state "$workflow_state_path"`。
 - 用户明确要求先确认方案时，在 TASK-02 或 TASK-03 前暂停。
 
 ## Step 4 TASK-01 需求门禁
@@ -124,13 +125,13 @@ python3 "$SKILL_DIR/scripts/workflow.py" handoff \
   --stage TASK-02
 ```
 
-任务卡只包含当前阶段必要信息和写入边界。优先直接使用任务卡作为派发消息主体。
+任务卡包含当前阶段必要信息、写入边界和本次执行配置快照。`handoff` 通过脚本持久化快照并返回 `dispatch_id`，后续派发和登记使用同一快照，不重新读取角色配置推导实际执行情况。
 
 ### 5.3 派发
 
 1. 使用宿主原生子 Agent 能力。
 2. `context_mode = isolated` 时使用隔离上下文。
-3. 只有非 `inherit` 的模型或推理强度才传覆盖参数。
+3. 按本次快照构造调用，只有非 `inherit` 的模型或推理强度才传覆盖参数；保存从实际调用提取的执行参数 JSON，格式见 `execution-reporting.md` 和当前宿主适配器。
 4. 派发消息必须包含：
    - `PROJECT_ROOT`、`SKILL_DIR`、`workflow_state_path`
    - 当前阶段、角色 ID、任务卡
@@ -146,10 +147,12 @@ python3 "$SKILL_DIR/scripts/workflow.py" record-spawn \
   --state "$workflow_state_path" \
   --stage TASK-02 \
   --handle "<agent-handle>" \
-  --host codex
+  --host codex \
+  --dispatch-id "<本次 handoff 的 dispatch_id>" \
+  --request-file "<本次 spawn-request JSON>"
 ```
 
-只有宿主真实返回句柄后才登记。
+只有宿主真实返回句柄后才登记。主线程展示返回的单行 `notice`；宿主未回报模型或推理等级时不得标为已确认。宿主后续提供回报时使用 `record-runtime` 补记证据。
 
 ### 5.5 阶段角色工作
 
@@ -212,17 +215,16 @@ python3 "$SKILL_DIR/scripts/role_registry.py" check-model \
 
 存在兼容 fallback 时保留模型、调整推理档。显式指定的推理档不受支持时停止并向用户报告。
 
+派发失败尚无句柄时，`fail` 同时传本次 `--dispatch-id` 和 `--request-file` 保存失败尝试的实际参数。每次重试重新 `handoff`；调整参数时登记 `--fallback-reason`，对话只补充一句变化与原因，不重复详细日志。
+
 ### 子 Agent 不可用
 
-只有工具不存在或明确返回 unavailable/not found 时，才允许主线程内联执行，并记录：
+只有工具不存在或明确返回 unavailable/not found 时，才允许主线程内联执行。运行以下命令登记执行，同时追加 `agent_spawn_unavailable`，然后展示返回的 `notice`：
 
-```json
-{
-  "kind": "agent_spawn_unavailable",
-  "stage": "TASK-02",
-  "role_id": "architect",
-  "reason": "<实际错误>"
-}
+```bash
+python3 "$SKILL_DIR/scripts/workflow.py" record-execution \
+  --state "$workflow_state_path" --stage TASK-02 \
+  --mode inline --reason "<实际工具不可用原因>"
 ```
 
 主线程内联执行仍需遵守当前阶段角色提示和全部校验。
@@ -249,7 +251,7 @@ python3 "$SKILL_DIR/scripts/workflow.py" status \
   --state "$workflow_state_path"
 ```
 
-只读汇总当前阶段、角色、模型、推理强度、事件、下一目标、产物存在性、失败次数、错误和 summary。
+只读汇总当前阶段、角色、句柄、配置要求、实际提交、宿主回报、事件、下一目标、产物存在性、失败次数、错误和 summary。按用户查询范围回答，不直接粘贴完整 JSON；需要历史尝试、派发快照和降级记录时加 `--details`。旧记录没有执行依据时明确未核实。
 
 ## Step 9 完成
 
@@ -266,6 +268,7 @@ python3 "$SKILL_DIR/scripts/workflow.py" complete \
 
 3. 确认 `summary.status = "completed"`、`last_event = "workflow_completed"`。
 4. 保留全部中间产物和状态。
+5. 最终回复聚焦交付、验证及关键剩余问题，不默认附执行配置表；详细审计由状态文件承载。
 
 ## Step 10 中止
 

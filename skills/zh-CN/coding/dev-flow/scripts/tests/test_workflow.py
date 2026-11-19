@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from argparse import Namespace
 from pathlib import Path
+from unittest.mock import patch
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[2]
@@ -294,7 +295,7 @@ parallel_tasks:
         )
         report = self.validate("TASK-03")
         joined = "\n".join(report["errors"])
-        self.assertIn("03-code/change-report.md", joined)
+        self.assertIn(str(self.artifacts_dir / "03-code" / "change-report.md"), joined)
         self.assertIn("缺少必需产物", joined)
 
     def test_plan_scope_violation_is_rejected(self):
@@ -608,9 +609,202 @@ parallel_tasks:
         result = workflow.command_record_spawn(args, self.contracts)
         self.assertTrue(result["fallback"])
         self.assertEqual(result["reasoning_effort"], "high")
+        self.assertIsNone(result["execution"]["submitted"])
+        self.assertIn("未知（仅有配置）", result["notice"])
         args.reasoning_effort = "medium"
         with self.assertRaises(workflow.WorkflowError):
             workflow.command_record_spawn(args, self.contracts)
+
+    def prepare_dispatch(self):
+        self.prepare_requirement()
+        self.confirm_requirement()
+        self.complete("TASK-01")
+        return self.create_dispatch()
+
+    def create_dispatch(self):
+        args = workflow.build_parser().parse_args([
+            "handoff", "--state", str(self.state_path), "--stage", "TASK-02",
+        ])
+        workflow.command_handoff(args, self.contracts)
+        plan = workflow.load_state(self.state_path)["stages"]["TASK-02"]["dispatch_plan"]
+        request = self.artifacts_dir / f"request-{plan['dispatch_id']}.json"
+        workflow.write_json(request, {
+            "reasoning_effort": "high", "context_mode": "isolated",
+            "agent_type": "worker", "host_metadata": {"fork_turns": "none"},
+        })
+        return workflow.build_parser().parse_args([
+            "record-spawn", "--state", str(self.state_path), "--stage", "TASK-02",
+            "--handle", f"agent-{plan['dispatch_id']}",
+            "--dispatch-id", plan["dispatch_id"], "--request-file", str(request),
+        ])
+
+    def test_dispatch_snapshot_is_used_instead_of_reloading_roles(self):
+        args = self.prepare_dispatch()
+        with patch.object(workflow, "role_settings_for_stage", side_effect=AssertionError("配置不应重读")):
+            result = workflow.command_record_spawn(args, self.contracts)
+        execution = result["execution"]
+        self.assertEqual(execution["configured"]["model"], "inherit")
+        self.assertNotIn("model", execution["submitted"])
+        self.assertIsNone(execution["reported"]["model"])
+        self.assertEqual(execution["agent_type"], "worker")
+        self.assertIn("high（已提交）", result["notice"])
+        self.assertNotIn("\n", result["notice"])
+        before = self.state_path.read_bytes()
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_spawn(args, self.contracts)
+        self.assertEqual(before, self.state_path.read_bytes())
+
+    def test_stale_or_changed_dispatch_requires_matching_snapshot_and_reason(self):
+        args = self.prepare_dispatch()
+        latest = self.create_dispatch()
+        before = self.state_path.read_bytes()
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_spawn(args, self.contracts)
+        workflow.write_json(Path(latest.request_file), {"context_mode": "isolated"})
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_spawn(latest, self.contracts)
+        self.assertEqual(before, self.state_path.read_bytes())
+        latest.fallback_reason = "宿主不接受推理等级覆盖"
+        result = workflow.command_record_spawn(latest, self.contracts)
+        self.assertTrue(result["fallback"])
+        self.assertNotIn("已提交", result["notice"])
+        self.assertEqual(result["execution"]["configured"]["reasoning_effort"], "high")
+
+    def test_partial_host_reports_preserve_evidence_and_attempt_history(self):
+        args = self.prepare_dispatch()
+        args.reported_model = "provider/example-model"
+        args.report_source = "spawn 响应 model 字段"
+        workflow.command_record_spawn(args, self.contracts)
+        report_args = workflow.build_parser().parse_args([
+            "record-runtime", "--state", str(self.state_path), "--stage", "TASK-02",
+            "--handle", args.handle, "--reported-reasoning-effort", "high",
+            "--report-source", "宿主查询响应 reasoning_effort 字段",
+        ])
+        result = workflow.command_record_runtime(report_args)
+        reported = result["execution"]["reported"]
+        self.assertEqual(reported["model"]["source"], args.report_source)
+        self.assertIn("high（已确认）", result["notice"])
+        state = workflow.load_state(self.state_path)
+        original = next(d for d in state["decisions"] if d["kind"] == "agent_spawned")
+        self.assertIsNone(original["execution"]["reported"]["reasoning_effort"])
+        report_args.handle = "wrong-agent"
+        before = self.state_path.read_bytes()
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_runtime(report_args)
+        self.assertEqual(before, self.state_path.read_bytes())
+        retry = self.create_dispatch()
+        result = workflow.command_record_spawn(retry, self.contracts)
+        self.assertEqual(result["execution"]["reported"], {
+            "model": None, "reasoning_effort": None,
+        })
+        report_args.handle = args.handle
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_runtime(report_args)
+
+    def test_host_report_requires_source_and_concrete_value(self):
+        args = self.prepare_dispatch()
+        args.reported_model = "provider/example-model"
+        before = self.state_path.read_bytes()
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_spawn(args, self.contracts)
+        args.report_source = "spawn 响应"
+        args.reported_model = "inherit"
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_spawn(args, self.contracts)
+        self.assertEqual(before, self.state_path.read_bytes())
+
+    def test_failed_spawn_and_retry_keep_separate_evidence(self):
+        first = self.prepare_dispatch()
+        fail_args = workflow.build_parser().parse_args([
+            "fail", "--state", str(self.state_path), "--stage", "TASK-02",
+            "--error-class", "provider_error", "--error", "连接失败",
+            "--dispatch-id", first.dispatch_id, "--request-file", first.request_file,
+        ])
+        workflow.command_fail(fail_args, self.contracts)
+        before_retry = self.state_path.read_bytes()
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_spawn(first, self.contracts)
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_fail(fail_args, self.contracts)
+        self.assertEqual(before_retry, self.state_path.read_bytes())
+        second = self.create_dispatch()
+        result = workflow.command_record_spawn(second, self.contracts)
+        self.assertIsNone(result["execution"]["reported"]["model"])
+        status_args = workflow.build_parser().parse_args([
+            "status", "--state", str(self.state_path), "--details",
+        ])
+        before = self.state_path.read_bytes()
+        details = workflow.command_status(status_args)
+        failed = next(d for d in details["decisions"] if d["kind"] == "stage_failed")
+        self.assertEqual(failed["dispatch_plan"]["dispatch_id"], first.dispatch_id)
+        self.assertEqual(failed["submitted"]["reasoning_effort"], "high")
+        self.assertIsNone(failed["execution"])
+        self.assertEqual(details["stages"]["TASK-02"]["agent_handle"], second.handle)
+        self.assertEqual(before, self.state_path.read_bytes())
+
+    def test_solo_reports_main_thread_without_claiming_role_effort_applied(self):
+        workflow.command_classify(Namespace(
+            state=str(self.state_path), size="small", reason="单文件修改",
+        ), self.contracts)
+        args = workflow.build_parser().parse_args([
+            "record-execution", "--state", str(self.state_path), "--stage", "SOLO",
+            "--mode", "main_thread",
+        ])
+        result = workflow.command_record_execution(args, self.contracts)
+        self.assertEqual(result["execution"]["configured"]["reasoning_effort"], "medium")
+        self.assertEqual(result["execution"]["submitted"], {})
+        self.assertIsNone(result["execution"]["agent_handle"])
+        self.assertIn("主线程", result["notice"])
+        self.assertNotIn("medium", result["notice"])
+        spawn = workflow.build_parser().parse_args([
+            "record-spawn", "--state", str(self.state_path), "--stage", "SOLO", "--handle", "fake",
+        ])
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_spawn(spawn, self.contracts)
+
+    def test_inline_execution_records_unavailable_reason(self):
+        self.prepare_dispatch()
+        args = workflow.build_parser().parse_args([
+            "record-execution", "--state", str(self.state_path), "--stage", "TASK-02",
+            "--mode", "inline",
+        ])
+        with self.assertRaises(workflow.WorkflowError):
+            workflow.command_record_execution(args, self.contracts)
+        args.reason = "当前宿主没有子 Agent 工具"
+        result = workflow.command_record_execution(args, self.contracts)
+        self.assertIn("内联降级", result["notice"])
+        state = workflow.load_state(self.state_path)
+        self.assertEqual(state["decisions"][-1]["kind"], "agent_spawn_unavailable")
+
+    def test_invalid_submitted_parameters_do_not_write_state(self):
+        args = self.prepare_dispatch()
+        before = self.state_path.read_bytes()
+        for submitted in (
+            {"model": "inherit", "context_mode": "isolated"},
+            {"reasoning_effort": "high"},
+            {"reasoning_effort": "high", "context_mode": "isolated", "message": "提示词"},
+            {"reasoning_effort": "high", "context_mode": "inherit"},
+        ):
+            with self.subTest(submitted=submitted):
+                workflow.write_json(Path(args.request_file), submitted)
+                args.fallback_reason = "测试宿主参数边界"
+                with self.assertRaises(workflow.WorkflowError):
+                    workflow.command_record_spawn(args, self.contracts)
+                self.assertEqual(before, self.state_path.read_bytes())
+
+    def test_legacy_status_remains_read_only_without_fabricating_execution(self):
+        state = workflow.load_state(self.state_path)
+        state["stages"]["TASK-02"].update({
+            "agent_handle": "old-agent", "model": "inherit", "reasoning_effort": "high",
+        })
+        workflow.write_json(self.state_path, state)
+        before = self.state_path.read_bytes()
+        result = workflow.command_status(Namespace(state=str(self.state_path)))
+        stage = result["stages"]["TASK-02"]
+        self.assertTrue(stage["configuration_only"])
+        self.assertIsNone(stage["execution"])
+        self.assertNotIn("decisions", result)
+        self.assertEqual(before, self.state_path.read_bytes())
 
     def test_state_event_mismatch_is_rejected(self):
         state = workflow.load_state(self.state_path)

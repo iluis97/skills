@@ -28,30 +28,27 @@
 3. 只传当前工具 schema 接受且任务需要的参数；不传 `agent_type` 等未声明参数。
 4. 派发消息在 `fork_turns = "none"` 时必须自包含。
 5. 派发前运行 `workflow.py handoff` 生成自包含任务卡。
-6. 派出成功后运行 `workflow.py record-spawn` 记录真实 Agent ID。
+6. 按本次 `handoff` 快照派发，成功后运行 `workflow.py record-spawn` 记录真实 Agent ID、本次 `dispatch_id` 和实际提交参数。
 
 ## 派发记录
 
-派出成功后运行 `workflow.py record-spawn`，由脚本追加通用记录并保留 Codex 审计字段：
+从本次真实工具调用提取参数，写入阶段目录的 `spawn-request-<dispatch_id>.json`。例如实际使用了 `reasoning_effort=high` 和 `fork_turns=none`、省略模型覆盖时：
 
 ```json
 {
-  "kind": "agent_spawned",
-  "host": "codex",
-  "stage": "TASK-02",
-  "role_id": "architect",
-  "agent_handle": "<spawn_agent 返回的 ID>",
-  "model": "inherit",
   "reasoning_effort": "high",
   "context_mode": "isolated",
-  "fork_turns": "none",
-  "model_source": "parent",
-  "reasoning_effort_source": "role",
-  "fallback": false
+  "host_metadata": {
+    "fork_turns": "none"
+  }
 }
 ```
 
-脚本会同时把角色执行配置写入对应 `stages.<stage>`。不要手改状态文件。
+只有实际传入 `agent_type` 时才将该字段加入 JSON。`context_mode` 根据真实 `fork_turns` 映射，不直接复制期望配置；`fork_turns=all` 不得登记为隔离。实际省略的模型或推理覆盖在 JSON 中同样省略。
+
+成功后运行 `record-spawn --dispatch-id ... --request-file ... --handle ...`，脚本在对应阶段及 `decisions[]` 保存三类依据。只返回 Agent ID 的响应不能确认模型和推理等级；只有宿主明确返回的具体字段才通过 `--reported-model` / `--reported-reasoning-effort` 和 `--report-source` 登记。稍后回报用 `record-runtime`，不得采信子 Agent 自述。
+
+主线程只展示命令返回的一行 `notice`。完整协议见 [../execution-reporting.md](../execution-reporting.md)，不要手改状态文件。
 
 如果用户在 `assets/roles.json` 中为角色配置了具体 Codex 模型，默认应同时使用 `context_mode = "isolated"`。当前仓库配置使用 `model = "inherit"`，避免把特定供应商模型写死到通用技能中。
 
@@ -59,16 +56,12 @@
 
 ### 子 Agent 工具不可用
 
-仅当工具不存在或明确返回 unavailable/not found 时，允许主线程内联执行，并记录：
+仅当工具不存在或明确返回 unavailable/not found 时，允许主线程内联执行，运行：
 
-```json
-{
-  "kind": "agent_spawn_unavailable",
-  "host": "codex",
-  "stage": "TASK-02",
-  "role_id": "architect",
-  "reason": "<实际错误>"
-}
+```bash
+python3 "$SKILL_DIR/scripts/workflow.py" record-execution \
+  --state "$workflow_state_path" --stage TASK-02 \
+  --mode inline --host codex --reason "<实际工具不可用原因>"
 ```
 
 ### 模型或推理强度不可用
@@ -78,20 +71,9 @@
 - 有兼容档位时保留用户指定模型，只调整 `reasoning_effort`。
 - 无兼容档位时去掉模型和推理强度覆盖，保留 `fork_turns` 重试一次。
 
-发生模型错误时先用 `workflow.py fail --error-class model_capability_error` 或 `provider_error` 记录失败，再重新 `handoff` 和派发。
+发生模型错误时先用 `workflow.py fail --error-class model_capability_error` 或 `provider_error` 记录失败，并提供失败尝试的 `--dispatch-id` 和 `--request-file`。再重新 `handoff` 和派发，成功登记时用 `--fallback-reason` 记录实际调整原因。对话补充一句配置变化，详情落盘；新尝试不沿用旧回报。
 
-```json
-{
-  "kind": "role_runtime_fallback",
-  "host": "codex",
-  "stage": "TASK-02",
-  "role_id": "architect",
-  "configured_model": "<原模型>",
-  "configured_reasoning_effort": "<原推理强度>",
-  "fallback": "inherit",
-  "reason": "<实际错误>"
-}
-```
+`role_runtime_fallback` 决策由脚本追加；其中 `execution.configured` 保留原要求，`execution.submitted` 保存本次实际参数。不要将移除覆盖后的继承值填成具体模型或等级。
 
 ### 上下文压缩
 

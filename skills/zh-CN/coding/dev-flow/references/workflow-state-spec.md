@@ -83,6 +83,40 @@
 }
 ```
 
+上述平面模型字段为兼容保留的解析配置，不证明实际执行配置。新执行另记 `execution`，例如：
+
+```json
+{
+  "mode": "sub_agent",
+  "dispatch_id": "<本次快照 ID>",
+  "agent_handle": "<真实句柄>",
+  "agent_type": null,
+  "configured": {
+    "model": "inherit",
+    "reasoning_effort": "high"
+  },
+  "submitted": {
+    "reasoning_effort": "high",
+    "context_mode": "isolated",
+    "host_metadata": {"fork_turns": "none"}
+  },
+  "reported": {
+    "model": null,
+    "reasoning_effort": null
+  },
+  "fallback_reason": null
+}
+```
+
+- `mode` 为 `sub_agent`、`main_thread` 或 `inline`；后两者的 `agent_handle` 和 `agent_type` 为 `null`，没有提交覆盖时 `submitted` 为 `{}`。
+- 旧式登记没有提交依据时，`submitted` 为 `null`，不能据配置标为已提交；更早的状态没有 `execution` 时仍可读取，不补猜事实。状态版本仍为 `2.0`。
+- `reported` 的两个字段分别为 `null`，或 `{"value": "<具体值>", "source": "<宿主证据来源>"}`。只对有宿主回报的字段标为已确认。
+- `dispatch_plan` 保存本次 `handoff` 的配置快照、唯一 `dispatch_id` 及准备时间；`handoff` 会写状态并追加 `dispatch_prepared`。实际登记与快照不符时必须说明降级原因。
+- 每次执行的配置、提交、回报、真实句柄和原因保留在只追加的 `decisions[]` 中；阶段内 `execution` 表示最近一次登记执行。`record-runtime` 只更新匹配当前句柄的回报，同时追加历史，不能改写之前尝试的证据。
+- 派发失败尚无句柄时，`fail` 决策保存本次快照、`submitted` 和错误，决策中的 `execution` 为 `null`；阶段的 `failed_dispatch_id` 标记已失败的快照，不得复用或重复登记失败。不登记虚构 Agent，详情由 `status --details` 展开。
+
+执行参数文件、回报登记和对话展示见 [execution-reporting.md](execution-reporting.md)。
+
 TASK-01 还记录：
 
 ```json
@@ -144,9 +178,12 @@ blocked -> in_progress
 python3 "$SKILL_DIR/scripts/workflow.py" init ...
 python3 "$SKILL_DIR/scripts/workflow.py" classify --state "$STATE" --size medium --reason "..."
 python3 "$SKILL_DIR/scripts/workflow.py" status --state "$STATE"
+python3 "$SKILL_DIR/scripts/workflow.py" status --state "$STATE" --details
 python3 "$SKILL_DIR/scripts/workflow.py" handoff --state "$STATE" --stage TASK-02
 python3 "$SKILL_DIR/scripts/workflow.py" confirm --state "$STATE" --stage TASK-01 --note "..."
-python3 "$SKILL_DIR/scripts/workflow.py" record-spawn --state "$STATE" --stage TASK-02 --handle "..." --host codex
+python3 "$SKILL_DIR/scripts/workflow.py" record-spawn --state "$STATE" --stage TASK-02 --handle "..." --host codex --dispatch-id "..." --request-file "..."
+python3 "$SKILL_DIR/scripts/workflow.py" record-execution --state "$STATE" --stage SOLO --mode main_thread
+python3 "$SKILL_DIR/scripts/workflow.py" record-runtime --state "$STATE" --stage TASK-02 --handle "..." --reported-model "..." --report-source "..."
 python3 "$SKILL_DIR/scripts/workflow.py" validate --state "$STATE" --stage TASK-02
 python3 "$SKILL_DIR/scripts/workflow.py" complete --state "$STATE" --stage TASK-02
 python3 "$SKILL_DIR/scripts/workflow.py" fail --state "$STATE" --stage TASK-02 --error-class artifact_invalid --error "..."
