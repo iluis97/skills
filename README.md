@@ -9,7 +9,7 @@
 | 编码 | add-doc | [中文](skills/zh-CN/coding/add-doc/SKILL.md) | [English](skills/en/coding/add-doc/SKILL.md) | 在指定范围内完善代码文档与注释 | [说明](docs/coding/add-doc/README.md) |
 | 编码 | code-like-me | [中文](skills/zh-CN/coding/code-like-me/SKILL.md) | [English](skills/en/coding/code-like-me/SKILL.md) | 遵循项目约定应用个人编码偏好 | [说明](docs/coding/code-like-me/README.md) |
 | 编码 | dev-flow | [中文](skills/zh-CN/coding/dev-flow/SKILL.md) | — | 按角色完成可校验、可恢复的软件交付，简洁展示执行身份与配置依据 | [说明](docs/coding/dev-flow/README.md) |
-| 编码 | dev-workflow | [中文](skills/zh-CN/coding/dev-workflow/SKILL.md) | — | 围绕用户目标按成果与依赖推进开发，配置角色模型与思考强度，由负责人判断规模、按需委派并维护轻量记录 | [说明](docs/coding/dev-workflow/README.md) |
+| 编码 | dev-workflow | [中文](skills/zh-CN/coding/dev-workflow/SKILL.md) | — | 围绕用户目标澄清关键决策、按成果与依赖推进开发，配置角色模型与思考强度，由负责人判断规模、按需委派并维护轻量记录 | [说明](docs/coding/dev-workflow/README.md) |
 | 运维 | log-analysis | [中文](skills/zh-CN/operations/log-analysis/SKILL.md) | [English](skills/en/operations/log-analysis/SKILL.md) | 按范围分析日志并提供可定位证据 | [说明](docs/operations/log-analysis/README.md) |
 | 运维 | ssh | [中文](skills/zh-CN/operations/ssh/SKILL.md) | [English](skills/en/operations/ssh/SKILL.md) | 验证 SSH 访问并指导用户配置公钥 | [说明](docs/operations/ssh/README.md) |
 | 效率 | work-summary | [中文](skills/zh-CN/productivity/work-summary/SKILL.md) | — | 按完整需求归并工作，从对话判断起止时间和状态，估算有效投入，确认后保存每日记录 | [说明](docs/productivity/work-summary/README.md) |
