@@ -1,5 +1,0 @@
-interface:
-  display_name: "Add Doc"
-  short_description: "Improve code documentation and comments"
-policy:
-  allow_implicit_invocation: false

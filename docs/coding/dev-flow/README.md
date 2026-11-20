@@ -6,8 +6,6 @@
 
 ## 如何使用
 
-当前提供[中文技能包](../../../skills/zh-CN/coding/dev-flow/SKILL.md)，尚无英文版本。按[安装与切换语言](../../../README.md#安装与切换语言)复制完整技能文件夹，在新会话显式调用：
-
 ```text
 $dev-flow start 实现订单查询接口
 $dev-flow status order-query
