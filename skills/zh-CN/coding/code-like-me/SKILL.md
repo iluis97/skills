@@ -1,7 +1,7 @@
 ---
 name: code-like-me
 description: 遵循需求、项目规范与接口契约，应用个人编码偏好完成实现，按复杂度和风险选择分析与验证深度，保持逻辑完整、代码简洁。
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # code-like-me
