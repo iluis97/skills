@@ -32,6 +32,7 @@ docs/
 - 技能包内 `scripts/`：可执行脚本；`assets/`：模板、图片等资源，按需创建。
 - `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，通用流程、编码偏好和复查要求集中在技能入口，另有数据与异常、Java 两份条件参考资料。
 - [dev-workflow 使用说明](docs/coding/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/coding/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；真实调用验收见[场景资料](docs/coding/dev-workflow/acceptance.md)。
+- [work-summary 使用说明](docs/productivity/work-summary/README.md)：按完整需求整理每日工作记录，默认省略测试内容和未执行事项声明，确认后保存。
 
 每个技能包根目录只保留 `SKILL.md` 文件；其他文件放入包内对应子目录，不创建空目录占位。每个语言包包含执行所需的完整资料和资源，包内引用指向当前语言包中的文件。通用维护约定在根目录，专属维护说明在各技能对应的中文 README，包内不另设 `AGENTS.md`。
 
