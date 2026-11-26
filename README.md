@@ -28,9 +28,9 @@ docs/
 - `skills/<语言>/<分类>/<技能名>/SKILL.md`：所选语言的技能执行入口。
 - 项目根目录 [AGENTS.md](AGENTS.md)：通用维护要求；维护具体技能前，自行阅读对应的 `docs/<分类>/<技能名>/README.md`。
 - 技能包内 `references/`：按条件读取的补充资料，如 `java.md`、`docker.md`、`commands.md`。
-- 技能包内 `agents/openai.yaml`：所选语言的技能展示信息和手动调用策略。
+- 技能包内 `agents/openai.yaml`：所选语言的技能展示信息和调用策略。
 - 技能包内 `scripts/`：可执行脚本；`assets/`：模板、图片等资源，按需创建。
-- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，通用流程、编码偏好、业务分支注释和复查要求集中在技能入口，另有数据与异常、Java 两份条件参考资料。
+- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，通用流程、编码偏好、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口，另有数据与异常、Java（含 Javadoc）两份条件参考资料。
 - [dev-workflow 使用说明](docs/coding/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/coding/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；真实调用验收见[场景资料](docs/coding/dev-workflow/acceptance.md)。
 - [work-summary 使用说明](docs/productivity/work-summary/README.md)：按完整需求整理每日工作记录，默认省略测试内容和未执行事项声明，确认后保存。
 
@@ -40,11 +40,11 @@ docs/
 
 1. 在 `skills/` 下选择实际存在的语言包，目前维护 `zh-CN` 中文目录；其他语言包提供后按相同结构安装。
 2. 将所选语言、分类下的完整技能文件夹复制到宿主的技能目录，保持技能文件夹名称不变。例如，将 `skills/zh-CN/coding/code-like-me/` 复制到 `<宿主技能目录>/code-like-me/`。
-3. 在新会话中通过原名称显式调用，例如 `$code-like-me`。技能读取所安装语言包的规则和配套资料。
+3. 在新会话中可通过原名称显式调用，例如 `$code-like-me`；是否允许自动触发以该技能的配置为准。技能读取所安装语言包的规则和配套资料。
 
 每个宿主默认只安装同一技能的一种语言。有其他语言包可用时，先核对安装目标并备份已有副本，再用所选语言的完整包更新同一位置，保留已有扩展配置；不要留下两套同名技能或混用两种语言的文件。不同技能可以分别选择语言。
 
-每个技能包均设置 `disable-model-invocation: true` 和 `policy.allow_implicit_invocation: false`。仓库源码与已安装副本独立，仓库变更后需另行同步安装副本。
+新增技能默认手动触发，设置 `disable-model-invocation: true` 和 `policy.allow_implicit_invocation: false`；用户明确指定其他触发方式时按其要求配置。维护已有技能时保留其触发配置，除非用户明确要求调整，不统一改写。仓库源码与已安装副本独立，仓库变更后需另行同步安装副本。
 
 ## 语言版本维护
 
@@ -61,4 +61,4 @@ Agent 执行时仅读取已安装语言包的入口及所需的包内补充资�
 
 ## 维护检查
 
-修改后人工核对名称、手动配置、语言包完整性、中英文语义、包内链接及文档索引，不添加校验脚本或测试类。宿主实际调用效果在新会话中确认。
+修改后人工核对名称、调用配置、语言包完整性、中英文语义、包内链接及文档索引，不添加校验脚本或测试类。宿主实际调用效果在新会话中确认。
