@@ -14,6 +14,10 @@ git branch backup/$(git branch --show-current)-$(date +%Y%m%d%H%M)
 # 记录改写前的树哈希
 ORIGINAL_TREE=$(git rev-parse HEAD^{tree})
 echo $ORIGINAL_TREE
+
+# 只确认会影响能否改写的共享历史：远程与主干分支
+git remote -v
+git branch -r --contains HEAD
 ```
 
 ## 拆分一条提交
@@ -104,16 +108,11 @@ git reset --hard HEAD@{<n>}
 ```bash
 # 仅大小写重命名（macOS 等不区分大小写的文件系统）
 git mv --force <OldName> <NewName>
-
-# 换行符导致整文件 diff：先统一属性，再重新拆分
-git diff --ignore-all-space
 ```
 
-子模块指针变化单独作为一个提交。
+## 密钥
 
-## 密钥与大文件
-
-发现密钥、凭证或大文件进入历史时停止改写，说明风险并建议使用专用历史过滤工具；密钥需同时作废并轮换。改写历史不等于安全处理。
+发现密钥或凭证进入历史时停止改写，说明风险并建议使用专用历史过滤工具；密钥需同时作废并轮换。改写历史不等于安全处理。
 
 ## 验证
 
@@ -129,9 +128,8 @@ git range-diff backup/<branch>-<time>...HEAD
 git log --oneline backup/<branch>-<time>..HEAD
 git show --stat <commit>
 
-# 检查签名与 tag
-git log --show-signature -n <n>
-git tag --contains <rewritten-commit>
+# 作者与共同作者
+git log --format='%h %an <%ae> %(trailers)' <base>..HEAD
 ```
 
-签名失效时需重新签名（`git rebase --exec 'git commit --amend --no-edit -S'`），由用户确认后再推送。
+以上副作用检查在改写后执行一次即可，改写前无需重复。

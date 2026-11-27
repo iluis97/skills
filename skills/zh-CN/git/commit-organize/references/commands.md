@@ -15,6 +15,13 @@ git diff -- <file>
 
 # 近期提交风格
 git log -n 20 --format='%s'
+
+# 需要查看未跟踪文件内容时：登记后一次 diff 取全，不逐个 cat
+git add -N <new-file>
+git diff -- <new-file>
+
+# 该文件最终不提交时撤回登记
+git restore --staged <new-file>
 ```
 
 ## 按文件分组
