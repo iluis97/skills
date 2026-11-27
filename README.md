@@ -13,6 +13,7 @@ skills/
     │   ├── agent-team/
     │   └── dev-workflow/
     ├── operations/      # 运维与故障排查
+    │   ├── java-troubleshooting/
     │   ├── log-analysis/
     │   └── ssh/
     ├── productivity/    # 个人效率与辅助工具
@@ -37,6 +38,9 @@ docs/
 - [dev-workflow 使用说明](docs/workflow/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/workflow/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；真实调用验收见[场景资料](docs/workflow/dev-workflow/acceptance.md)。
 - [work-summary 使用说明](docs/productivity/work-summary/README.md)：按完整需求整理每日工作记录，默认省略测试内容和未执行事项声明，确认后保存。
 - [axure-reader 使用说明](docs/productivity/axure-reader/README.md)：读取 Axure、Axhub 原型链接，逐链接提取页面内容、批注与交互并整理需求。
+- [java-troubleshooting 使用说明](docs/operations/java-troubleshooting/README.md)：排查运行中 Java 服务的响应变慢、无响应、内存增长等异常，按宿主机资源、容器限额、JVM、代码逐层归因；优先 Arthas，不可用时回退 JDK 原生工具。
+- [log-analysis 使用说明](docs/operations/log-analysis/README.md)：根据日志排查服务问题，结合代码与近期变更定位原因，以可复核证据支撑结论。
+- [ssh 使用说明](docs/operations/ssh/README.md)：验证并连接服务器，连不上时指导完成连接，连接后按用户要求在授权范围内执行远程操作。
 
 每个技能包根目录只保留 `SKILL.md` 文件；其他文件放入包内对应子目录，不创建空目录占位。每个语言包包含执行所需的完整资料和资源，包内引用指向当前语言包中的文件。通用维护约定在根目录，专属维护说明在各技能对应的中文 README，包内不另设 `AGENTS.md`。
 

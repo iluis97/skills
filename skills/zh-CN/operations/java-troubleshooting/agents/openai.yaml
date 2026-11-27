@@ -1,0 +1,5 @@
+interface:
+  display_name: "Java 服务运行期排查"
+  short_description: "分层排查运行中 Java 服务的异常，优先 Arthas"
+policy:
+  allow_implicit_invocation: false
