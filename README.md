@@ -8,13 +8,11 @@
 skills/
 └── zh-CN/
     ├── coding/          # 代码实现与文档质量
-    │   ├── add-doc/
     │   └── code-like-me/
     ├── workflow/        # 多角色编排与任务推进
     │   ├── agent-team/
     │   └── dev-workflow/
     ├── operations/      # 运维与故障排查
-    │   ├── log-analysis/
     │   └── ssh/
     ├── productivity/    # 个人效率与辅助工具
     │   ├── axure-reader/
