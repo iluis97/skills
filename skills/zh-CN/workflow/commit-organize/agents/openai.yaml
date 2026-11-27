@@ -1,0 +1,5 @@
+interface:
+  display_name: "提交组织"
+  short_description: "按变更单元分组提交并生成清晰的提交信息"
+policy:
+  allow_implicit_invocation: false

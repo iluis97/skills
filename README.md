@@ -12,6 +12,7 @@ skills/
     ├── workflow/        # 多角色编排与任务推进
     │   ├── agent-team/
     │   ├── commit-cleanup/
+    │   ├── commit-organize/
     │   ├── dev-workflow/
     │   └── restate-goal/
     ├── operations/      # 运维与故障排查
@@ -40,6 +41,7 @@ docs/
 - [dev-workflow 使用说明](docs/workflow/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/workflow/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；真实调用验收见[场景资料](docs/workflow/dev-workflow/acceptance.md)。
 - [restate-goal 使用说明](docs/workflow/restate-goal/README.md)：用自己的话复述用户的目标与要解决的问题，区分事实与推断，确认理解一致后再继续。
 - [commit-cleanup 使用说明](docs/workflow/commit-cleanup/README.md)：整理提交历史，拆分混合提交、合并碎片提交、重排顺序并补全信息，只改组织方式并校验树哈希。
+- [commit-organize 使用说明](docs/workflow/commit-organize/README.md)：把工作区未提交改动按变更单元分组提交，生成符合项目风格的提交信息，直接产出清晰历史。
 - [work-summary 使用说明](docs/productivity/work-summary/README.md)：按完整需求整理每日工作记录，默认省略测试内容和未执行事项声明，确认后保存。
 - [axure-reader 使用说明](docs/productivity/axure-reader/README.md)：读取 Axure、Axhub 原型链接，逐链接提取页面内容、批注与交互并整理需求。
 - [java-troubleshooting 使用说明](docs/operations/java-troubleshooting/README.md)：排查运行中 Java 服务的响应变慢、无响应、内存增长等异常，按宿主机资源、容器限额、JVM、代码逐层归因；优先 Arthas，不可用时回退 JDK 原生工具。
