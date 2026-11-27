@@ -2,7 +2,7 @@
 
 ## 做什么
 
-排查**运行中**的 Java 服务出现的异常——响应变慢、无响应、资源占用异常、内存持续增长、线程异常等。先还原实际表现，再从宿主机资源、运行环境限额（Docker 时）、JVM 到应用代码逐层归因，以可复核证据支撑结论。优先使用 Arthas，不可用时回退 JDK 原生工具。当前提供[中文技能入口](../../../skills/zh-CN/operations/java-troubleshooting/SKILL.md)。
+排查**运行中**的 Java 服务出现的异常——响应变慢、无响应、资源占用异常、内存持续增长、线程异常等。先还原实际表现，再从宿主机资源、运行环境限额（Docker 时）、JVM 到应用代码逐层归因，以可复核证据支撑结论。优先使用 Arthas，不可用时回退 JDK 原生工具。当前提供[中文技能入口](../../../skills/zh-CN/operations/java-troubleshooting/SKILL.md)，以及面向人的[命令速查表](commands-cheatsheet.md)（不进入技能执行，供手动查用）。
 
 ## 什么时候使用
 
