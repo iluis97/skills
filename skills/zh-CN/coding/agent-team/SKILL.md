@@ -1,7 +1,7 @@
 ---
 name: agent-team
 description: 围绕用户目标统筹开展调研、设计、实现与审查，由 Leader 持续推进，并以实际成果和有效证据判断交付。团队明确四种角色职责，实际由多少执行者承担、如何分工以及是否并行，由宿主结合自身能力与任务需要决定。
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 ## 任务复杂度
