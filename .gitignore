@@ -40,6 +40,9 @@ nbdist/
 *.xml.versionsBackup
 *.swp
 
+# macOS Finder metadata
+.DS_Store
+
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
