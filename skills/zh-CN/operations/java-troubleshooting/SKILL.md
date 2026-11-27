@@ -25,6 +25,7 @@ disable-model-invocation: true
 - **运行环境限额**：仅 Docker 部署时——核对容器 CPU/内存 limit 与实际用量，确认是否存在 CPU throttling、内存逼近 limit 触发频繁 GC；注意 JVM 对容器限额的感知差异。资源充足但服务仍异常时重点查这层。宿主机直接部署时跳过。
 - **JVM 层**：有 Arthas 时优先使用 Arthas 观察线程、GC 与内存；仅当 Arthas 不可用时改用 JDK 原生工具（jcmd/jstack/jstat/jmap）等价观察，不为排查主动安装 Arthas。接入方式、现象与命令映射、生产安全要求见 [references/diagnostics.md](references/diagnostics.md)。按现象选命令，不逐项跑全量。
 - **代码与依赖**：用 trace 或堆栈定位具体方法段，用代码解释现象；外部依赖（DB、缓存、HTTP 等）的耗时单独验证，区分服务自身慢与依赖慢。
+- 兜底、重试、吞异常和截断取值可能掩盖根因：只有触发问题的状态本身合法时，在该处处理才算修复；否则继续追到产生它的位置。
 
 ## 3. 变更关联
 
