@@ -122,6 +122,13 @@ git diff --ignore-all-space
 git rev-parse HEAD^{tree}
 git diff backup/<branch>-<time> --stat
 
+# 新旧提交序列逐条对应；= 一致，! 有差异，未配对的要说明原因
+git range-diff backup/<branch>-<time>...HEAD
+
+# 逐条核对分组是否与计划一致
+git log --oneline backup/<branch>-<time>..HEAD
+git show --stat <commit>
+
 # 检查签名与 tag
 git log --show-signature -n <n>
 git tag --contains <rewritten-commit>
