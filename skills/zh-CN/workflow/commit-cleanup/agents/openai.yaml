@@ -1,0 +1,5 @@
+interface:
+  display_name: "提交整理"
+  short_description: "拆分、合并、重排提交，理顺提交历史"
+policy:
+  allow_implicit_invocation: false
