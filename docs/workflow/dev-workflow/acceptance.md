@@ -1,6 +1,6 @@
 # dev-workflow 验收场景
 
-本资料面向维护者，提供规则示例、实际调用输入和观察要求，不是运行时执行规范。推进语义以包内 [progression.md](../../../skills/zh-CN/coding/dev-workflow/references/progression.md) 为准，规模、角色、核验和记录方法以相应包内资料为准。
+本资料面向维护者，提供规则示例、实际调用输入和观察要求，不是运行时执行规范。推进语义以包内 [progression.md](../../../skills/zh-CN/workflow/dev-workflow/references/progression.md) 为准，规模、角色、核验和记录方法以相应包内资料为准。
 
 ## 验证层次与记录
 

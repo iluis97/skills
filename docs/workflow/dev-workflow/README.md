@@ -1,7 +1,7 @@
 # dev-workflow
 
-围绕用户目标组织调研、规划、按需委派、实现与核验，按规模落实工作深度，收到成果后核对、处理问题并继续推进，用一个权威任务记录保持连续性。当前提供[中文技能入口](../../../skills/zh-CN/coding/dev-workflow/SKILL.md)。
-维护设计见 [design.md](design.md)，建设与验证状态见[实施路线图](roadmap.md)，真实调用及后续引擎映射的验收资料见 [acceptance.md](acceptance.md)。旧 `dev-flow` 保留独立，新技能不读取或依赖旧包。
+围绕用户目标组织调研、规划、按需委派、实现与核验，按规模落实工作深度，收到成果后核对、处理问题并继续推进，用一个权威任务记录保持连续性。当前提供[中文技能入口](../../../skills/zh-CN/workflow/dev-workflow/SKILL.md)。
+维护设计见 [design.md](design.md)，建设与验证状态见[实施路线图](roadmap.md)，真实调用及后续引擎映射的验收资料见 [acceptance.md](acceptance.md)。旧 `dev-flow` 已归档至 `skills/zh-CN/_archive/dev-flow/`，新技能不读取或依赖归档包。
 
 ## 适合怎样的工作
 
@@ -26,7 +26,7 @@ $dev-workflow abort order-history
 
 ## 如何配置角色
 
-编辑所使用技能副本内的 [assets/roles.json](../../../skills/zh-CN/coding/dev-workflow/assets/roles.json)，可为 planner、builder、verifier 填写不同的宿主支持模型名及思考档位；模型默认继承，思考强度默认分别为 high、medium、high。Owner 由负责组织和交付的执行者承担并保持继承，填写配置不会切换执行者的实际配置。具体解析规则见[角色说明](../../../skills/zh-CN/coding/dev-workflow/references/roles.md#执行配置)。
+编辑所使用技能副本内的 [assets/roles.json](../../../skills/zh-CN/workflow/dev-workflow/assets/roles.json)，可为 planner、builder、verifier 填写不同的宿主支持模型名及思考档位；模型默认继承，思考强度默认分别为 high、medium、high。Owner 由负责组织和交付的执行者承担并保持继承，填写配置不会切换执行者的实际配置。具体解析规则见[角色说明](../../../skills/zh-CN/workflow/dev-workflow/references/roles.md#执行配置)。
 
 主角色派发读取对应配置，局部委派默认继承直接委派者。Owner 派发前简述角色、任务和计划配置，启动后区分实际提交与宿主确认；普通进度不重复模型信息。例如：
 
@@ -36,7 +36,7 @@ $dev-workflow abort order-history
 
 ## 任务怎样推进
 
-独立的[推进规则](../../../skills/zh-CN/coding/dev-workflow/references/progression.md) 是判断何时开始、交接、等待、完成及恢复中止的权威来源。PR-01 至 PR-16 使用稳定编号，分别写明触发事件、判断依据、成立条件、处理动作、不成立或未知情况及结果影响，为后续小型规则引擎提供映射依据；当前仍由负责人实际执行。
+独立的[推进规则](../../../skills/zh-CN/workflow/dev-workflow/references/progression.md) 是判断何时开始、交接、等待、完成及恢复中止的权威来源。PR-01 至 PR-16 使用稳定编号，分别写明触发事件、判断依据、成立条件、处理动作、不成立或未知情况及结果影响，为后续小型规则引擎提供映射依据；当前仍由负责人实际执行。
 
 核验发现实现缺陷就修复后检查新成果；方案参数或条款矛盾先修方案；真实用户选择先展示材料，其他独立工作继续。已经披露差距仍须处理授权内可执行的必要工作，不能仅因影响轻微或尚未验收就结束。
 
@@ -44,7 +44,7 @@ $dev-workflow abort order-history
 
 ## 何时讨论方案
 
-用户描述足以实施时直接按要求落实，不强制重新设计或确认；缺少事实先调查，普通技术细节由规划者决定。只有存在会影响成果、且未交由负责人自主决定的关键歧义或取舍时，才先讨论相关方向，再深化和实施。内部审查通过不能代表用户认可，规则见[需求明确程度与用户决策](../../../skills/zh-CN/coding/dev-workflow/references/clarification.md)。
+用户描述足以实施时直接按要求落实，不强制重新设计或确认；缺少事实先调查，普通技术细节由规划者决定。只有存在会影响成果、且未交由负责人自主决定的关键歧义或取舍时，才先讨论相关方向，再深化和实施。内部审查通过不能代表用户认可，规则见[需求明确程度与用户决策](../../../skills/zh-CN/workflow/dev-workflow/references/clarification.md)。
 
 需要深入澄清时可以使用可选技能 `$grilling`，需单独可用且由用户显式指定或在当前会话明确授权，例如：
 

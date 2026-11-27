@@ -1,0 +1,5 @@
+interface:
+  display_name: "Axure 原型读取"
+  short_description: "读取 Axure、Axhub 原型链接并整理需求"
+policy:
+  allow_implicit_invocation: false

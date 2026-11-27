@@ -1,5 +1,7 @@
 # dev-flow
 
+> **已归档**：该技能已被 `dev-workflow` 与 `agent-team` 取代，不再分发和安装；以下内容仅为历史资料。技能包位于 `skills/zh-CN/_archive/dev-flow/`。
+
 ## 做什么
 
 以可校验、可恢复的阶段流程完成需求确认、设计、实现、独立审查、测试、知识沉淀和总结。small 任务由主线程完成，medium/large 任务按角色派发。
@@ -36,4 +38,4 @@ $dev-flow abort order-query
 - TASK-01/SOLO 如实标注主线程，角色配置不会被当成主线程已经切换配置。
 - 阶段完成前有实际校验，未运行项、失败和风险会明确说明，最终答复不附冗长执行日志。
 
-详细执行约定位于技能包内的[执行记录与简洁播报](../../../skills/zh-CN/coding/dev-flow/references/execution-reporting.md)。文件核对和脚本测试不能证明宿主真实调用效果，需在新会话分别观察正常派发、无配置回报和降级重试。
+详细执行约定位于技能包内的[执行记录与简洁播报](../../../skills/zh-CN/_archive/dev-flow/references/execution-reporting.md)。文件核对和脚本测试不能证明宿主真实调用效果，需在新会话分别观察正常派发、无配置回报和降级重试。
