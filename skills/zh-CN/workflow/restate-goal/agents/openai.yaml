@@ -1,0 +1,5 @@
+interface:
+  display_name: "复述目标"
+  short_description: "用自己的话复述目标与问题，确认理解一致"
+policy:
+  allow_implicit_invocation: false
