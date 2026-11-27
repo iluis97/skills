@@ -7,10 +7,17 @@
 ## 0. 先看规模
 
 ```bash
-ls -lh <file>                      # 文件大小
-wc -l <file>                       # 行数
-find <dir> -name '<pattern>' | wc -l   # 候选文件数量
-ls -lt <dir> | head                # 最新的几个文件
+# 文件大小
+ls -lh <file>
+
+# 行数
+wc -l <file>
+
+# 候选文件数量
+find <dir> -name '<pattern>' | wc -l
+
+# 最新的几个文件
+ls -lt <dir> | head
 ```
 
 大文件或目录很多时先做这一步，再决定要不要加时间窗和范围限制。
@@ -18,35 +25,35 @@ ls -lt <dir> | head                # 最新的几个文件
 ## 1. 定位与上下文
 
 ```bash
-# 字面量匹配：关键词含 . [ ] ( ) * + ? 等正则元字符时必须用 -F
+# 字面量匹配（关键词含 . [ ] ( ) 等正则元字符时必须加 -F）
 grep -n -F 'Error: timeout' <file>
 
 # 忽略大小写
 grep -n -i 'timeout' <file>
 
-# 前后文
+# 命中行及前 2 行、后 5 行
 grep -n -A 5 -B 2 -F 'NullPointerException' <file>
 
-# 只取前 20 条命中（大文件先看样本）
+# 最多取前 20 条（大文件先看样本）
 grep -m 20 -F 'ERROR' <file>
 
-# 只列出命中的文件
+# 只列出命中的文件名
 grep -r -l -F 'OutOfMemoryError' <dir>
 
-# 按类型限定文件
+# 限定文件类型
 grep -r -F 'ERROR' --include='*.log' <dir>
 ```
 
 ## 2. 过滤与组合
 
 ```bash
-# 排除噪音
+# 排除噪音后只看错误
 grep -v -F 'healthcheck' <file> | grep -F 'ERROR'
 
-# 多关键词 OR
+# 多个关键词任一命中（OR）
 grep -F -e 'ERROR' -e 'WARN' -e 'Exception' <file>
 
-# AND：两次过滤
+# 两个条件同时命中（AND）
 grep -F 'order-123' <file> | grep -F 'timeout'
 
 # 模式以 - 开头时必须用 -e
@@ -61,10 +68,10 @@ grep -e '-Xmx' <file>
 # 粗略方式（已知堆栈长度上限）
 grep -A 30 -F 'Exception' <file>
 
-# 按事件边界合并：以时间戳开头的行是新事件，命中关键字的整块输出
+# 按事件边界合并：以时间戳开头为新事件，命中关键字的整块输出
 awk '/^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ { keep = ($0 ~ /(ERROR|Exception)/) } keep' <file>
 
-# 只取某个事件之后的内容，直到出现下一条时间戳
+# 从命中行输出到下一条时间戳为止
 awk 'BEGIN{show=0} /^[0-9][0-9][0-9][0-9]-/ { if (show) exit } /NullPointerException/ { show=1 } show' <file>
 ```
 
@@ -73,13 +80,13 @@ Java 堆栈的续行通常以空白、`\tat `、`Caused by:`、`... 23 more` 开
 ## 4. 关联 ID 追踪
 
 ```bash
-# 用 -w 保证整词匹配，避免 ID 是别的值的子串时误伤
+# 整词匹配，避免 ID 是别的值的子串时误伤
 grep -n -w -F '1f2e3d4c5b6a' <file>
 
-# 多种 ID 字段名一次搜
+# 常见几种 ID 字段名一起搜
 grep -F -e 'traceId=1f2e3d4c5b6a' -e 'requestId=1f2e3d4c5b6a' <file>
 
-# 跨多个服务和文件
+# 跨目录批量搜
 grep -r -n -w -F '1f2e3d4c5b6a' <dir>
 ```
 
@@ -92,20 +99,20 @@ zgrep -n -F 'ERROR' /var/log/app/app.log.*.gz
 # 按顺序合并多个文件后再过滤
 zcat app.log.2.gz app.log.1.gz | grep -F 'ERROR'
 
-# 近期变更过的日志文件
+# 近两天变更过的日志文件
 find /var/log/app -name 'app.log*' -mtime -2 | sort | xargs -r zgrep -F 'ERROR'
 
-# 当前文件 + 所有轮转
+# 当前文件加全部轮转
 zgrep -F 'ERROR' app.log app.log.*
 ```
 
 ## 6. 时间窗过滤
 
 ```bash
-# 时间戳在行首且格式固定时，字符串比较即可（前提：同格式、同时区）
+# 行首时间戳格式固定时，字符串比较即可（前提：同格式、同时区）
 awk '$1 >= "2026-11-27T09:00" && $1 < "2026-11-27T10:00"' <file>
 
-# 时间戳以空格分隔日期与时间
+# 日期与时间以空格分隔
 grep -E '^2026-11-27 (09|10):' <file>
 
 # 精确到分钟
@@ -117,23 +124,25 @@ grep -E '^2026-11-27 09:[0-9][0-9]:' <file>
 ## 7. 统计与聚合
 
 ```bash
-# 命中数
+# 命中总数
 grep -c -F 'ERROR' <file>
 
-# Top N 消息：去掉时间戳前缀后按消息聚合
+# Top 20 消息：去掉时间戳前缀后按消息聚合
 awk '{ $1=""; $2=""; print }' <file> | sort | uniq -c | sort -rn | head -20
 
 # 按分钟分桶，看趋势和拐点
 awk '{ print substr($0, 1, 16) }' <file> | sort | uniq -c
 
-# 按某固定列聚合（例如第 7 列是接口名）
+# 按固定列聚合（例如第 7 列是接口名）
 awk '{ print $7 }' <file> | sort | uniq -c | sort -rn | head -20
 
-# JSON 行日志
+# JSON 行日志：按消息聚合
 jq -r 'select(.level=="ERROR") | .message' <file> | sort | uniq -c | sort -rn | head -20
+
+# JSON 行日志：按分钟聚合
 jq -r 'select(.level=="ERROR") | ."@timestamp"[0:16]' <file> | sort | uniq -c
 
-# 数值排序取最大（例如耗时）
+# 取某列的数值最大项（例如耗时）
 awk '{ print $8 }' <file> | sort -n | tail -10
 ```
 
@@ -142,15 +151,20 @@ awk '{ print $8 }' <file> | sort -n | tail -10
 ## 8. systemd（journalctl）
 
 ```bash
+# 指定时间窗，非交互必须加 --no-pager
 journalctl -u <service> --since '2026-11-27 09:00' --until '2026-11-27 10:00' --no-pager
 
-journalctl -u <service> -p err -n 200 --no-pager      # 只看 err 及以上
-journalctl -u <service> -f                            # 实时跟随
+# 只看 err 及以上，最近 200 条
+journalctl -u <service> -p err -n 200 --no-pager
+
+# 实时跟随
+journalctl -u <service> -f
+
+# 相对时间
 journalctl -u <service> --since '30 min ago' --no-pager
 
-# 结构化输出后按优先级筛选
-journalctl -u <service> -o json --no-pager \
-  | jq -r 'select((.PRIORITY|tonumber) <= 3) | .MESSAGE'
+# 结构化输出后按优先级过滤
+journalctl -u <service> -o json --no-pager | jq -r 'select((.PRIORITY|tonumber) <= 3) | .MESSAGE'
 ```
 
 非交互执行必须加 `--no-pager`，否则会卡在分页器里。
@@ -161,17 +175,28 @@ journalctl -u <service> -o json --no-pager \
 # Docker：固定时间窗
 docker logs --since '2026-11-27T09:00:00' --until '2026-11-27T10:00:00' --timestamps <container>
 
-docker logs --tail 200 -t <container>     # 最近 200 行（不代表覆盖时间窗）
-docker logs -f --since 10m <container>    # 实时跟随
+# 最近 200 行（不代表覆盖时间窗）
+docker logs --tail 200 -t <container>
 
-# 日志实际存放位置与容器状态
+# 实时跟随近 10 分钟
+docker logs -f --since 10m <container>
+
+# 日志文件实际路径
 docker inspect --format '{{.LogPath}}' <container>
+
+# 重启次数、退出码、是否被 OOM 杀
 docker inspect --format '{{.RestartCount}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}' <container>
 
-# Kubernetes
+# k8s：指定时间窗
 kubectl logs <pod> --since=1h --timestamps
-kubectl logs <pod> -p                     # 上一个容器实例（重启前的日志）
-kubectl logs <pod> -c <container>         # 多容器 Pod 指定容器
+
+# k8s：上一个容器实例（重启前的日志）
+kubectl logs <pod> -p
+
+# k8s：多容器 Pod 指定容器
+kubectl logs <pod> -c <container>
+
+# k8s：按标签取全部副本
 kubectl logs -l app=<name> --since=1h --all-containers
 ```
 
@@ -183,13 +208,13 @@ kubectl logs -l app=<name> --since=1h --all-containers
 # C locale 显著提速
 LC_ALL=C grep -F 'ERROR' <big-file>
 
-# 只关心前若干条时尽早截断
+# 只要前 100 条时尽早截断
 LC_ALL=C grep -m 100 -F 'ERROR' <big-file>
 
-# 解压 + 过滤降低优先级
+# 解压加过滤，降低优先级
 zcat <big>.gz | nice -n 10 grep -F 'ERROR' | head -50
 
-# 管道实时观察时才需要行缓冲
+# 实时观察时才需要行缓冲
 tail -f <file> | grep --line-buffered -F 'ERROR'
 ```
 
@@ -220,15 +245,21 @@ tail -f <file> | grep --line-buffered -F 'ERROR'
 ## 13. 常用组合
 
 ```bash
-# 一次请求全链路：定位 → 看事件 → 看时间线
-grep -n -w -F '<traceId>' app.log* 
+# 一次请求全链路：先定位
+grep -n -w -F '<traceId>' app.log*
+
+# 再看该请求的完整上下文
 grep -A 40 -w -F '<traceId>' app.log
+
+# 看它出现在哪些时间点
 grep -w -F '<traceId>' app.log | awk '{print substr($0,1,19)}' | sort | uniq -c
 
-# 错误突增定位：先看趋势，再看拐点前后
+# 错误突增：先看每分钟趋势
 grep -F 'ERROR' app.log | awk '{print substr($0,1,16)}' | sort | uniq -c
+
+# 再取拐点前后的事件
 awk '$1 >= "2026-11-27T09:40" && $1 < "2026-11-27T09:50"' app.log | grep -F 'ERROR'
 
-# 最慢请求
+# 最慢的 20 条请求（最后一列为耗时）
 awk '{print $NF, $0}' app.log | sort -n | tail -20
 ```

@@ -2,158 +2,231 @@
 
 面向人的命令速查，覆盖宿主机资源、容器限额、JVM 与 Arthas。**不属于技能执行规则**，Agent 不读取本文件。
 
-约定：`<...>` 是需要替换的占位符；`<pid>` 为 **Java 进程 pid**（容器内执行时用容器内的 pid）；除标注外均为只读；高风险命令单独标记。
+约定：`<...>` 是需要替换的占位符；`<pid>` 为 Java 进程 pid（容器内执行时用容器内 pid）；除标注外均为只读。
 
 ## 0. 先确认环境与进程
 
 ```bash
-jps -l                                  # 当前用户的 Java 进程
-ps -ef | grep -v grep | grep java       # 全部 Java 进程，看启动参数
+# 当前用户的 Java 进程
+jps -l
 
+# 全部 Java 进程，含启动参数
+ps -ef | grep -v grep | grep java
+
+# JDK 版本
 java -version
-cat /proc/<pid>/cmdline | tr '\0' ' '   # 实际启动命令与 JVM 参数
-cat /proc/<pid>/limits                  # 进程级 ulimit（句柄、栈、内存）
 
-# 容器内执行时，先确认目标容器与容器内 pid
+# 实际启动命令与 JVM 参数
+cat /proc/<pid>/cmdline | tr '\0' ' '
+
+# 进程级 ulimit（句柄、栈、内存）
+cat /proc/<pid>/limits
+
+# 容器内先确认目标进程
 docker exec -it <container> jps -l
 ```
 
-判断进程是否还活着、是否在反复重启：
+判断是否在反复重启：
 
 ```bash
+# 重启次数、退出码、是否 OOM、启动时间
 docker inspect --format '{{.RestartCount}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}} started={{.State.StartedAt}}' <container>
+
+# 含已停止的容器
 docker ps -a --filter "name=<container>"
 ```
 
 ## 1. 宿主机资源
 
 ```bash
-# CPU 总体：负载、使用率
+# 负载与运行时长
 uptime
+
+# CPU 总体概况
 top -b -n 1 | head -20
+
+# 每个核的利用率
 mpstat -P ALL 1 3
 
-# 单个进程
+# 单进程 CPU
 pidstat -u 1 -p <pid>
-pidstat -d 1 -p <pid>                   # 磁盘 IO
-pidstat -w 1 -p <pid>                   # 上下文切换
+
+# 单进程磁盘 IO
+pidstat -d 1 -p <pid>
+
+# 上下文切换
+pidstat -w 1 -p <pid>
 
 # 内存与 swap
 free -m
-vmstat 1 5                              # si/so 非零说明在换页
 
-# 磁盘 IO
-iostat -x 1 5                           # %util 接近 100、await 高 = IO 瓶颈
+# si/so 非零说明在换页
+vmstat 1 5
+
+# 磁盘 IO（看 %util 与 await）
+iostat -x 1 5
+
+# 磁盘容量
 df -h
+
+# 大目录占用
 du -sh /var/log/*
 
-# 网络
+# socket 汇总
 ss -s
-ss -tnp | head -50                      # 连接数与状态分布
-netstat -s | grep -iE 'retrans|drop'    # 重传与丢包
+
+# 连接状态分布
+ss -tnp | head -50
+
+# 重传与丢包
+netstat -s | grep -iE 'retrans|drop'
+
+# 网卡流量
 sar -n DEV 1 3
 
-# 内核压力（PSI，较新内核）：avg10 高说明资源正被挤占
+# 资源压力（avg10 高说明正被挤占）
 cat /proc/pressure/cpu /proc/pressure/memory /proc/pressure/io
 ```
 
-判断要点：**load 高但 CPU 不高**，通常是有进程卡在 IO 或不可中断状态（D 状态），先看 `iostat` 和 `pidstat -d`。
+判断要点：load 高但 CPU 不高，通常是有进程卡在 IO 或不可中断状态，先看 `iostat` 和 `pidstat -d`。
 
 ## 2. 容器限额
 
-宿主机资源充足、容器内却慢，优先查限额。
+宿主机资源充足、容器内却慢时，优先查这一层。
 
 ```bash
+# 容器实时资源
 docker stats --no-stream <container>
 
-# cgroup v1
+# cgroup v1：CPU 限流次数与时长
 cat /sys/fs/cgroup/cpu/cpu.stat | grep -E 'nr_throttled|throttled_time'
+
+# cgroup v1：内存上限
 cat /sys/fs/cgroup/memory/memory.limit_in_bytes
+
+# cgroup v1：当前内存用量
 cat /sys/fs/cgroup/memory/memory.usage_in_bytes
+
+# cgroup v1：触顶次数
 cat /sys/fs/cgroup/memory/memory.failcnt
 
-# cgroup v2
+# cgroup v2：CPU 限流
 cat /sys/fs/cgroup/cpu.stat | grep -E 'nr_throttled|throttled_usec'
+
+# cgroup v2：内存上限与当前用量
 cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.current
-cat /sys/fs/cgroup/memory.events          # 有 oom_kill 说明曾被 OOM 杀
+
+# cgroup v2：OOM 事件（出现 oom_kill 说明被杀过）
+cat /sys/fs/cgroup/memory.events
 
 # 限额配置
 docker inspect --format '{{.HostConfig.CpuQuota}} {{.HostConfig.CpuPeriod}} {{.HostConfig.Memory}} {{.HostConfig.MemorySwap}}' <container>
+
+# JVM 视角的核数、内存与容器支持
+jcmd <pid> VM.info | grep -iE 'cpu|memory|container'
+
+# 容器相关的 JVM 参数
+jcmd <pid> VM.flags | tr ' ' '\n' | grep -iE 'ActiveProcessorCount|MaxHeapSize|UseContainer'
 ```
 
 `nr_throttled` 持续增长 = 容器被 CPU 限流，此时 JVM 内部怎么看都「不忙」，但响应确实慢。
 
-JVM 视角的核数与内存：
-
-```bash
-jcmd <pid> VM.info | grep -iE 'cpu|memory|container'
-jcmd <pid> VM.flags | tr ' ' '\n' | grep -iE 'ActiveProcessorCount|MaxHeapSize|UseContainer'
-```
-
 ## 3. JVM 概况
 
 ```bash
+# 版本
 jcmd <pid> VM.version
+
+# 全部 JVM 参数
 jcmd <pid> VM.flags -all
+
+# 系统属性
 jcmd <pid> VM.system_properties
+
+# 运行时长
 jcmd <pid> VM.uptime
-jcmd <pid> GC.heap_info                 # 各区容量与使用量
-jcmd <pid> help                         # 当前 JVM 支持的全部诊断命令
+
+# 堆各区容量与使用量
+jcmd <pid> GC.heap_info
+
+# 当前 JVM 支持的全部诊断命令
+jcmd <pid> help
 ```
 
 JFR（低开销，推荐先用）：
 
 ```bash
+# 开始 60 秒采样
 jcmd <pid> JFR.start name=diag duration=60s filename=/tmp/diag.jfr settings=profile
+
+# 中途导出
 jcmd <pid> JFR.dump name=diag filename=/tmp/diag.jfr
+
+# 提前停止
 jcmd <pid> JFR.stop name=diag
 ```
 
 ## 4. 线程
 
 ```bash
-# 线程快照；多次采样比单次更有价值
+# 线程快照
 jstack <pid> > /tmp/js.1.txt
+
+# 间隔 5 秒再采两次，便于比对
 sleep 5; jstack <pid> > /tmp/js.2.txt
 sleep 5; jstack <pid> > /tmp/js.3.txt
 
-# 状态统计
+# BLOCKED 线程数
 grep -c 'java.lang.Thread.State: BLOCKED' /tmp/js.1.txt
+
+# WAITING 线程数
 grep -c 'java.lang.Thread.State: WAITING' /tmp/js.1.txt
+
+# RUNNABLE 线程数
 grep -c 'java.lang.Thread.State: RUNNABLE' /tmp/js.1.txt
 
-# 找阻塞源头（-b 直接打印持锁线程与调用栈）
+# 死锁及其持锁栈
 jstack -l <pid> | grep -A 30 'Found one Java-level deadlock'
 
-# 线程总数与命名分布
-jcmd <pid> Thread.print | grep '^"' | sed 's/".*//' | head
+# 线程总数
 jcmd <pid> Thread.print | grep -c '^"'
+
+# 线程名分布
+jcmd <pid> Thread.print | grep '^"' | head
 ```
 
 CPU 高的线程如何对应到代码：
 
 ```bash
-top -H -p <pid>                         # 记下高 CPU 的线程 ID（十进制）
-printf '%x\n' <tid>                     # 转成十六进制
-grep -A 30 'nid=0x<hex>' /tmp/js.1.txt  # 在 jstack 快照里定位
+# 找出高 CPU 线程 ID（十进制）
+top -H -p <pid>
+
+# 转成十六进制
+printf '%x\n' <tid>
+
+# 在 jstack 快照中定位该线程
+grep -A 30 'nid=0x<hex>' /tmp/js.1.txt
 ```
 
-容器内注意 pid 命名空间：`top -H` 和 `jstack` 必须在同一个命名空间里执行（都用 `docker exec`），宿主机的 tid 与容器内不对应。
+容器内注意 pid 命名空间：`top -H` 与 `jstack` 必须在同一命名空间执行（都用 `docker exec`），宿主机的 tid 与容器内不对应。
 
 ## 5. GC 与内存
 
 ```bash
-# 每 1 秒输出一次 GC 统计
+# 每秒一次共 10 次；列：S0 S1 E O M CCS YGC YGCT FGC FGCT GCT
 jstat -gcutil <pid> 1000 10
-# 列：S0 S1 E O M CCS YGC YGCT FGC FGCT CGC CGCT GCT
-# 重点：FGC 增长快、FGCT 占比高、O 长期接近 100
 
-jstat -gc <pid> 1000 10                 # 各区容量（KB）
-jstat -gccapacity <pid>                 # 各代容量与最大容量
+# 各区容量（KB）
+jstat -gc <pid> 1000 10
 
-# 堆与对象分布
+# 各代容量与最大容量
+jstat -gccapacity <pid>
+
+# 对象分布 Top 30
 jcmd <pid> GC.class_histogram | head -30
-jmap -histo <pid> | head -30            # 注意：-histo:live 会触发 Full GC
+
+# 同上，但会触发 Full GC
+jmap -histo <pid> | head -30
 ```
 
 GC 日志（需启动时开启，不能事后补）：
@@ -161,31 +234,42 @@ GC 日志（需启动时开启，不能事后补）：
 ```bash
 # JDK 8
 -Xloggc:/var/log/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps
+
 # JDK 9+
 -Xlog:gc*:file=/var/log/gc.log:time,uptime,level,tags
 ```
 
-堆快照：
+堆快照与内存增长对比：
 
 ```bash
-jcmd <pid> GC.heap_dump /tmp/heap.hprof     # 会 STW，先确认磁盘余量
+# 导堆（会 STW，先确认磁盘余量）
+jcmd <pid> GC.heap_dump /tmp/heap.hprof
+
+# jmap 方式导堆
 jmap -dump:format=b,file=/tmp/heap.hprof <pid>
 
-# 对象数量对比（排查内存持续增长）：间隔一段再取一次
+# 先取一次对象分布
 jcmd <pid> GC.class_histogram > /tmp/h1.txt
-sleep 300
-jcmd <pid> GC.class_histogram > /tmp/h2.txt
+
+# 间隔 5 分钟后再取一次
+sleep 300; jcmd <pid> GC.class_histogram > /tmp/h2.txt
+
+# 对比两次前 20 行
 diff <(head -20 /tmp/h1.txt) <(head -20 /tmp/h2.txt)
 ```
 
 ## 6. Arthas
 
-优先使用。容器内执行时用 `docker exec -it <container>` 进入后运行，**需与目标 JVM 同用户或 root**。
+优先使用。需与目标 JVM 同用户或 root；容器内先进入容器。
 
 ```bash
+# 进入容器
 docker exec -it <container> sh
-java -jar /opt/arthas/arthas-boot.jar     # 列出 JVM，输入序号附加
-# 或直接指定
+
+# 启动并选择目标进程
+java -jar /opt/arthas/arthas-boot.jar
+
+# 或直接指定 pid
 java -jar /opt/arthas/arthas-boot.jar <pid>
 ```
 
@@ -211,11 +295,14 @@ java -jar /opt/arthas/arthas-boot.jar <pid>
 退出与恢复：
 
 ```text
-stop          # 断开当前会话，增强类会在下次调用时还原
-shutdown      # 彻底关闭 Arthas 服务端
+# 断开会话，增强类在下次调用时还原
+stop
+
+# 彻底关闭 Arthas 服务端
+shutdown
 ```
 
-注意：`trace`/`watch`/`stack`/`monitor`/`profiler` 都有运行时开销，观察完立即 `stop`，不要在高峰期长时间挂着。
+`trace`/`watch`/`stack`/`monitor`/`profiler` 都有运行时开销，观察完立即 `stop`，不要在高峰期长时间挂着。
 
 ## 7. 兼容性差异
 
@@ -243,23 +330,38 @@ shutdown      # 彻底关闭 Arthas 服务端
 ## 9. 常用组合
 
 ```bash
-# CPU 高：找线程 → 转 hex → 对栈
+# CPU 高：找出高 CPU 线程 ID
 top -H -p <pid>
+
+# 同时抓一份线程快照
 jstack <pid> > /tmp/js.txt
+
+# 转 hex 后对栈
 grep -A 30 "nid=0x$(printf '%x' <tid>)" /tmp/js.txt
 
-# CPU 不高但响应慢：先排除限流与 IO，再看阻塞与 GC
+# CPU 不高但慢：先查是否被限流
 cat /sys/fs/cgroup/cpu.stat | grep throttled
+
+# 再看磁盘 IO
 iostat -x 1 3
+
+# 再看阻塞线程数
 jstack <pid> | grep -c 'BLOCKED'
+
+# 再看 GC 趋势
 jstat -gcutil <pid> 1000 5
 
-# 内存持续增长：看趋势 → 对比对象分布 → 必要时导堆
+# 内存持续增长：看堆用量
 jcmd <pid> GC.heap_info
+
+# 看对象分布
 jcmd <pid> GC.class_histogram | head -20
+
+# 需要进一步分析时导堆
 jcmd <pid> GC.heap_dump /tmp/heap-$(date +%H%M).hprof
 
 # 间歇性停顿：低开销先抓 JFR
 jcmd <pid> JFR.start name=stall duration=120s filename=/tmp/stall.jfr settings=profile
-# 结束后用 JDK Mission Control 打开，看 GC 停顿与长线程
 ```
+
+JFR 结束后用 JDK Mission Control 打开，重点看 GC 停顿与长耗时线程。
