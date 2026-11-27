@@ -13,6 +13,7 @@ skills/
     │   ├── agent-team/
     │   └── dev-workflow/
     ├── operations/      # 运维与故障排查
+    │   ├── log-analysis/
     │   └── ssh/
     ├── productivity/    # 个人效率与辅助工具
     │   ├── axure-reader/
