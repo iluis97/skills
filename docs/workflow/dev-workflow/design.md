@@ -1,6 +1,6 @@
 # dev-workflow 维护设计
 
-初版日期：2026-11-19；本次改造：2026-11-20。
+初版日期：2026-11-19；本次改造：2026-11-20；2026-11-28 补充任务类型方法。
 
 ## 目标与本次问题
 
@@ -17,6 +17,7 @@
 | [SKILL.md](../../../skills/zh-CN/workflow/dev-workflow/SKILL.md) | 范围、操作入口、读取时机与主流程摘要 |
 | [progression.md](../../../skills/zh-CN/workflow/dev-workflow/references/progression.md) | 推进语义的唯一权威来源：输入含义、事件次序、条件、动作及影响 |
 | [scale.md](../../../skills/zh-CN/workflow/dev-workflow/references/scale.md) | 规模来源与调研、规划、组织、验证的工作基线 |
+| [playbooks.md](../../../skills/zh-CN/workflow/dev-workflow/references/playbooks.md) | 缺陷修复、重构、功能、只读调查和性能的任务类型方法 |
 | [roles.md](../../../skills/zh-CN/workflow/dev-workflow/references/roles.md) | 四种职责、模型与思考强度解析和播报方式 |
 | [tasks-and-delegation.md](../../../skills/zh-CN/workflow/dev-workflow/references/tasks-and-delegation.md) | 任务消息、执行者所需资料及成果交接方式 |
 | [clarification.md](../../../skills/zh-CN/workflow/dev-workflow/references/clarification.md) | 识别已有决定、工程判断与真实用户取舍的方法 |
@@ -24,7 +25,7 @@
 | [task-record.md](../../../skills/zh-CN/workflow/dev-workflow/references/task-record.md)及模板 | 唯一记录的组织方式与所需信息 |
 | [acceptance.md](acceptance.md) | 面向维护者的规则示例、场景输入、观察要求和验证状态 |
 
-是否允许开始、接受、等待或完成，在 progression.md 中定义。其他文件说明如何完成职责，并以规则编号引用推进条件；改变规模或核验要求时同步检查对应推进规则。本目录不作为运行时依赖，不另存第三份执行规范。
+是否允许开始、接受、等待或完成，在 progression.md 中定义。其他文件说明如何完成职责，并以规则编号引用推进条件；改变规模或核验要求时同步检查对应推进规则。playbooks.md 只补充任务类型的具体做法，不新增开始、完成或核验条件；类型方法与其他资料冲突时，以 progression.md 的推进条件为准。本目录不作为运行时依赖，不另存第三份执行规范。
 
 ## 推进规则的组织
 

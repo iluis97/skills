@@ -34,6 +34,8 @@ $dev-workflow abort <任务名或记录路径>
 
 准备规划时读取 [references/clarification.md](references/clarification.md)。清晰要求直接沿用，工程细节在授权内处理；可查事实先查，未委托的关键选择提供讨论材料，不把假设直接用于正式实现。需要可选 `$grilling` 时按已有显式授权衔接，缺失或未授权不隐式调用，普通澄清仍可继续。
 
+识别任务主要类型（缺陷修复、重构、功能、只读调查、性能）后，读取 [references/playbooks.md](references/playbooks.md) 对应方法；跨类型时按依赖顺序组合，类型方法不替代推进规则和核验要求。
+
 组织角色及首次派发前读取 [references/roles.md](references/roles.md)、[assets/roles.json](assets/roles.json) 和 [references/tasks-and-delegation.md](references/tasks-and-delegation.md)。后续按角色及配置变化补读；同一任务已读且未变的资料不机械重复加载。
 
 | 职责 | 承担的工作 |

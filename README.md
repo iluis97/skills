@@ -38,15 +38,15 @@ docs/
 - 技能包内 `references/`：按条件读取的补充资料，如 `java.md`、`docker.md`、`commands.md`。
 - 技能包内 `agents/openai.yaml`：所选语言的技能展示信息和调用策略。
 - 技能包内 `scripts/`：可执行脚本；`assets/`：模板、图片等资源，按需创建。
-- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，通用流程、编码偏好、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口；异常与日志、数据与事务、缓存与并发、资源与性能四份运行时资料及 Java（含 Javadoc）资料由入口按任务直接选择；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
+- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，通用流程、编码偏好、类型与领域建模、读者负担、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口；异常与日志、数据与事务、缓存与并发、资源与性能（含量化结论的基线与波动）四份运行时资料及 Java（含类型建模与 Javadoc）资料由入口按任务直接选择；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
 - [agent-team 使用说明](docs/workflow/agent-team/README.md)：维护一版宿主无关的角色职责契约（Leader、Designer、Builder、Reviewer），具体调度与执行实现交由各 Agent Harness 完成。
-- [dev-workflow 使用说明](docs/workflow/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/workflow/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；真实调用验收见[场景资料](docs/workflow/dev-workflow/acceptance.md)。
-- [restate-goal 使用说明](docs/workflow/restate-goal/README.md)：用自己的话复述用户的目标与要解决的问题，区分事实与推断，确认理解一致后再继续。
+- [dev-workflow 使用说明](docs/workflow/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/workflow/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；缺陷修复、重构、功能、只读调查和性能的任务类型方法见 [playbooks.md](skills/zh-CN/workflow/dev-workflow/references/playbooks.md)；真实调用验收见[场景资料](docs/workflow/dev-workflow/acceptance.md)。
+- [restate-goal 使用说明](docs/workflow/restate-goal/README.md)：用自己的话复述用户的目标、要解决的问题和满足目标的最小改动，区分事实与推断，确认理解一致后再继续。
 - [commit-cleanup 使用说明](docs/git/commit-cleanup/README.md)：整理提交历史，拆分混合提交、合并碎片提交、重排顺序并补全信息，只改组织方式并校验树哈希。
-- [commit-organize 使用说明](docs/git/commit-organize/README.md)：把工作区未提交改动按变更单元分组提交，生成符合项目风格的提交信息，直接产出清晰历史。
+- [commit-organize 使用说明](docs/git/commit-organize/README.md)：把工作区未提交改动按变更单元分组提交，生成符合项目风格的提交信息，直接产出清晰历史；含缺陷修复时失败用例或复现证据先于修复提交。
 - [work-summary 使用说明](docs/productivity/work-summary/README.md)：按完整需求整理每日工作记录，默认省略测试内容和未执行事项声明，确认后保存。
 - [axure-reader 使用说明](docs/productivity/axure-reader/README.md)：读取 Axure、Axhub 原型链接，逐链接提取页面内容、批注与交互并整理需求。
-- [java-troubleshooting 使用说明](docs/operations/java-troubleshooting/README.md)：排查运行中 Java 服务的响应变慢、无响应、内存增长等异常，按宿主机资源、容器限额、JVM、代码逐层归因；优先 Arthas，不可用时回退 JDK 原生工具。
+- [java-troubleshooting 使用说明](docs/operations/java-troubleshooting/README.md)：排查运行中 Java 服务的响应变慢、无响应、内存增长等异常，按宿主机资源、容器限额、JVM、代码逐层归因；资源和性能结论带基线与波动范围；优先 Arthas，不可用时回退 JDK 原生工具。
 - [log-analysis 使用说明](docs/operations/log-analysis/README.md)：根据日志排查服务问题，结合代码与近期变更定位原因，以可复核证据支撑结论。
 - [ssh 使用说明](docs/operations/ssh/README.md)：验证并连接服务器，连不上时指导完成连接，连接后按用户要求在授权范围内执行远程操作。
 
