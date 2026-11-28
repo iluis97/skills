@@ -39,7 +39,7 @@ docs/
 - 技能包内 `references/`：按条件读取的补充资料，如 `java.md`、`docker.md`、`commands.md`。
 - 技能包内 `agents/openai.yaml`：所选语言的技能展示信息和调用策略。
 - 技能包内 `scripts/`：可执行脚本；`assets/`：模板、图片等资源，按需创建。
-- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，通用流程、编码偏好、类型与领域建模、读者负担、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口；异常与日志、数据与事务、缓存与并发、资源与性能（含量化结论的基线与波动）四份运行时资料及 Java（含类型建模与 Javadoc）资料由入口按任务直接选择；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
+- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，开发场景与改动边界、通用流程、编码偏好、类型与领域建模、读者负担、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口；异常与日志、数据与事务、缓存与并发、资源与性能（含量化结论的基线与波动）四份运行时资料及 Java（含类型建模与 Javadoc）资料由入口按任务直接选择；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
 - [agent-team 使用说明](docs/workflow/agent-team/README.md)：维护一版宿主无关的角色职责契约（Leader、Designer、Builder、Reviewer），具体调度与执行实现交由各 Agent Harness 完成。
 - [role-model-budget 使用说明](docs/workflow/role-model-budget/README.md)：按 small/medium/large 复杂度解析 Leader、Designer、Builder、Reviewer 的模型与思考强度，读取用户配置并在 Claude Code / Codex 能力内应用，缺失时使用内置默认；只输出预算表，不改变角色职责和调度。
 - [dev-workflow 使用说明](docs/workflow/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/workflow/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；缺陷修复、重构、功能、只读调查和性能的任务类型方法见 [playbooks.md](skills/zh-CN/workflow/dev-workflow/references/playbooks.md)；真实调用验收见[场景资料](docs/workflow/dev-workflow/acceptance.md)。
