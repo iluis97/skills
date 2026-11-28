@@ -40,7 +40,7 @@ docs/
 - 技能包内 `references/`：按条件读取的补充资料，如 `java.md`、`docker.md`、`commands.md`。
 - 技能包内 `agents/openai.yaml`：所选语言的技能展示信息和调用策略。
 - 技能包内 `scripts/`：可执行脚本；`assets/`：模板、图片等资源，按需创建。
-- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，开发场景与改动边界、通用流程、编码偏好、类型与领域建模、读者负担、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口；异常与日志、数据与事务、缓存与并发、资源与性能（含量化结论的基线与波动）四份运行时资料、Java（含类型建模与 Javadoc）资料及具体代码形态示例由入口按任务直接选择；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
+- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，开发场景与改动边界、通用流程、编码偏好、类型与领域建模、读者负担、调研范围、注释、日志和完成判定集中在技能入口；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
 - [agent-team 使用说明](docs/workflow/agent-team/README.md)：开发任务的默认团队组织方式：维护一版宿主无关的角色职责契约（Leader、Designer、Builder、Reviewer），四种角色是基线而非上限，可按任务需要增派；具体调度与执行实现交由各 Agent Harness 完成。
 - [role-model-budget 使用说明](docs/workflow/role-model-budget/README.md)：按 small/medium/large 复杂度解析 Leader、Designer、Builder、Reviewer 的模型与思考强度，读取用户配置并在 Claude Code / Codex 能力内应用，缺失时使用内置默认；只输出预算表，不改变角色职责和调度。
 - [restate-goal 使用说明](docs/workflow/restate-goal/README.md)：用自己的话复述用户的目标、要解决的问题和满足目标的最小改动，区分事实与推断，确认理解一致后再继续。
@@ -58,7 +58,7 @@ docs/
 
 1. 在 `skills/` 下选择实际存在的语言包，目前维护 `zh-CN` 中文目录；其他语言包提供后按相同结构安装。
 2. 将所选语言、分类下的完整技能文件夹复制到宿主的技能目录，保持技能文件夹名称不变。例如，将 `skills/zh-CN/coding/code-like-me/` 复制到 `<宿主技能目录>/code-like-me/`。
-3. 在新会话中可通过原名称显式调用，例如 `$code-like-me`；是否允许自动触发以该技能的配置为准。技能读取所安装语言包的规则和配套资料。
+3. 在新会话中可通过原名称显式调用，例如 `$code-like-me`；是否允许自动触发以该技能的配置为准。技能读取所安装语言包的入口规则。
 
 每个宿主默认只安装同一技能的一种语言。有其他语言包可用时，先核对安装目标并备份已有副本，再用所选语言的完整包更新同一位置，保留已有扩展配置；不要留下两套同名技能或混用两种语言的文件。不同技能可以分别选择语言。
 
@@ -69,7 +69,6 @@ docs/
 优先维护中文包，不为凑齐语言目录创建英文占位包。同一技能的不同语言包共用技能名称；不同技能名称唯一，每个语言目录内名称唯一。提供中英文版本时，按分类、技能名和包内相对路径配对，例如：
 
 - `skills/en/coding/code-like-me/SKILL.md` ↔ `skills/zh-CN/coding/code-like-me/SKILL.md`。
-- `skills/en/coding/code-like-me/references/java.md` ↔ `skills/zh-CN/coding/code-like-me/references/java.md`。
 
 已有双语版本的内容，修改任一份时在同一批改动中同步另一份，保持含义、规则强度、边界、例外和示例行为一致；新增、删除、重命名时同步配对资料和链接。用户明确要求分阶段验收时，先按指定版本修改，列明待同步项，再在后续阶段完成同步。
 
