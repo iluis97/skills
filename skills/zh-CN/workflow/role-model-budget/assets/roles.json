@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "defaults": {
+    "model": "inherit",
+    "reasoning_effort": "inherit"
+  },
+  "roles": {
+    "leader": {
+      "model": "inherit",
+      "reasoning_effort": "inherit"
+    },
+    "designer": {
+      "model": "inherit",
+      "reasoning_effort": "high"
+    },
+    "builder": {
+      "model": "inherit",
+      "reasoning_effort": "medium"
+    },
+    "reviewer": {
+      "model": "inherit",
+      "reasoning_effort": "high"
+    }
+  },
+  "complexity": {
+    "small": {
+      "designer": {
+        "reasoning_effort": "medium"
+      },
+      "builder": {
+        "reasoning_effort": "medium"
+      },
+      "reviewer": {
+        "reasoning_effort": "medium"
+      }
+    },
+    "large": {
+      "designer": {
+        "reasoning_effort": "xhigh"
+      },
+      "builder": {
+        "reasoning_effort": "high"
+      },
+      "reviewer": {
+        "reasoning_effort": "xhigh"
+      }
+    }
+  }
+}
