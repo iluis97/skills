@@ -1,6 +1,6 @@
 # dev-flow
 
-> **已归档**：该技能已被 `dev-workflow` 与 `agent-team` 取代，不再分发和安装；以下内容仅为历史资料。技能包位于 `skills/zh-CN/_archive/dev-flow/`。
+> **已归档**：该技能已被 `agent-team` 取代；`dev-workflow` 也已归档，二者均不再分发和安装。以下内容仅为历史资料。技能包位于 `skills/zh-CN/_archive/dev-flow/`。
 
 ## 做什么
 

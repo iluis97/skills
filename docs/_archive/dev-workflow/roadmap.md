@@ -1,6 +1,6 @@
 # dev-workflow 实施路线图
 
-本文件面向维护者，记录建设和验证状态，不是业务任务的固定阶段。执行入口为 [SKILL.md](../../../skills/zh-CN/workflow/dev-workflow/SKILL.md)，推进规则独立保留在 [progression.md](../../../skills/zh-CN/workflow/dev-workflow/references/progression.md)；当前设计见 [design.md](design.md)，场景及证据要求见 [acceptance.md](acceptance.md)。
+本文件面向维护者，记录建设和验证状态，不是业务任务的固定阶段。执行入口为 [SKILL.md](../../../skills/zh-CN/_archive/dev-workflow/SKILL.md)，推进规则独立保留在 [progression.md](../../../skills/zh-CN/_archive/dev-workflow/references/progression.md)；当前设计见 [design.md](design.md)，场景及证据要求见 [acceptance.md](acceptance.md)。
 
 ## 当前改造范围
 

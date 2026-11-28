@@ -1,5 +1,5 @@
 interface:
   display_name: "Agent 团队"
-  short_description: "围绕用户目标统筹调研、设计、实现与审查"
+  short_description: "开发任务的默认团队组织：调研、设计、实现与独立审查"
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

@@ -14,15 +14,15 @@
 
 | 文件 | 维护职责 |
 | --- | --- |
-| [SKILL.md](../../../skills/zh-CN/workflow/dev-workflow/SKILL.md) | 范围、操作入口、读取时机与主流程摘要 |
-| [progression.md](../../../skills/zh-CN/workflow/dev-workflow/references/progression.md) | 推进语义的唯一权威来源：输入含义、事件次序、条件、动作及影响 |
-| [scale.md](../../../skills/zh-CN/workflow/dev-workflow/references/scale.md) | 规模来源与调研、规划、组织、验证的工作基线 |
-| [playbooks.md](../../../skills/zh-CN/workflow/dev-workflow/references/playbooks.md) | 缺陷修复、重构、功能、只读调查和性能的任务类型方法 |
-| [roles.md](../../../skills/zh-CN/workflow/dev-workflow/references/roles.md) | 四种职责、模型与思考强度解析和播报方式 |
-| [tasks-and-delegation.md](../../../skills/zh-CN/workflow/dev-workflow/references/tasks-and-delegation.md) | 任务消息、执行者所需资料及成果交接方式 |
-| [clarification.md](../../../skills/zh-CN/workflow/dev-workflow/references/clarification.md) | 识别已有决定、工程判断与真实用户取舍的方法 |
-| [verification.md](../../../skills/zh-CN/workflow/dev-workflow/references/verification.md) | 目标关联、检查方法、证据覆盖及感知成果观察 |
-| [task-record.md](../../../skills/zh-CN/workflow/dev-workflow/references/task-record.md)及模板 | 唯一记录的组织方式与所需信息 |
+| [SKILL.md](../../../skills/zh-CN/_archive/dev-workflow/SKILL.md) | 范围、操作入口、读取时机与主流程摘要 |
+| [progression.md](../../../skills/zh-CN/_archive/dev-workflow/references/progression.md) | 推进语义的唯一权威来源：输入含义、事件次序、条件、动作及影响 |
+| [scale.md](../../../skills/zh-CN/_archive/dev-workflow/references/scale.md) | 规模来源与调研、规划、组织、验证的工作基线 |
+| [playbooks.md](../../../skills/zh-CN/_archive/dev-workflow/references/playbooks.md) | 缺陷修复、重构、功能、只读调查和性能的任务类型方法 |
+| [roles.md](../../../skills/zh-CN/_archive/dev-workflow/references/roles.md) | 四种职责、模型与思考强度解析和播报方式 |
+| [tasks-and-delegation.md](../../../skills/zh-CN/_archive/dev-workflow/references/tasks-and-delegation.md) | 任务消息、执行者所需资料及成果交接方式 |
+| [clarification.md](../../../skills/zh-CN/_archive/dev-workflow/references/clarification.md) | 识别已有决定、工程判断与真实用户取舍的方法 |
+| [verification.md](../../../skills/zh-CN/_archive/dev-workflow/references/verification.md) | 目标关联、检查方法、证据覆盖及感知成果观察 |
+| [task-record.md](../../../skills/zh-CN/_archive/dev-workflow/references/task-record.md)及模板 | 唯一记录的组织方式与所需信息 |
 | [acceptance.md](acceptance.md) | 面向维护者的规则示例、场景输入、观察要求和验证状态 |
 
 是否允许开始、接受、等待或完成，在 progression.md 中定义。其他文件说明如何完成职责，并以规则编号引用推进条件；改变规模或核验要求时同步检查对应推进规则。playbooks.md 只补充任务类型的具体做法，不新增开始、完成或核验条件；类型方法与其他资料冲突时，以 progression.md 的推进条件为准。本目录不作为运行时依赖，不另存第三份执行规范。
@@ -51,7 +51,7 @@ progression.md 使用 PR-01 至 PR-16 稳定编号，每条规则具有六个明
 
 轻量任务减少独立产物与交接，仍保留真实核对和必要独立核验；常规及复杂任务通过稳定目标标识连接方案、成果和证据。按关键事件同步一个任务记录，方案、截图和日志按需引用，不逐操作新增文件。
 
-角色模型配置继续使用 [roles.json](../../../skills/zh-CN/workflow/dev-workflow/assets/roles.json)，保留字段优先级、直接委派者继承及配置事实分层。配置缺口依赖真实宿主处理，不能通过改角色名称或口头声明补足。
+角色模型配置继续使用 [roles.json](../../../skills/zh-CN/_archive/dev-workflow/assets/roles.json)，保留字段优先级、直接委派者继承及配置事实分层。配置缺口依赖真实宿主处理，不能通过改角色名称或口头声明补足。
 
 技能包不内置语言或数据库专项，也不主动调用其他手动技能。`grilling` 作为可选能力按用户显式授权衔接；项目另有必需技能时按对应要求落实。
 

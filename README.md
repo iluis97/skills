@@ -12,7 +12,6 @@ skills/
     ├── workflow/        # 多角色编排与任务推进
     │   ├── agent-team/
     │   ├── role-model-budget/
-    │   ├── dev-workflow/
     │   └── restate-goal/
     ├── git/             # 提交与分支等版本控制操作
     │   ├── commit-cleanup/
@@ -25,13 +24,15 @@ skills/
     │   ├── axure-reader/
     │   └── work-summary/
     └── _archive/        # 已被取代、不再分发的归档技能
-        └── dev-flow/
+        ├── dev-flow/
+        └── dev-workflow/
 docs/
 ├── coding/
 ├── workflow/
 ├── git/
 ├── operations/
-└── productivity/
+├── productivity/
+└── _archive/
 ```
 
 - `skills/<语言>/<分类>/<技能名>/SKILL.md`：所选语言的技能执行入口。
@@ -39,10 +40,9 @@ docs/
 - 技能包内 `references/`：按条件读取的补充资料，如 `java.md`、`docker.md`、`commands.md`。
 - 技能包内 `agents/openai.yaml`：所选语言的技能展示信息和调用策略。
 - 技能包内 `scripts/`：可执行脚本；`assets/`：模板、图片等资源，按需创建。
-- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，开发场景与改动边界、通用流程、编码偏好、类型与领域建模、读者负担、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口；异常与日志、数据与事务、缓存与并发、资源与性能（含量化结论的基线与波动）四份运行时资料及 Java（含类型建模与 Javadoc）资料由入口按任务直接选择；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
-- [agent-team 使用说明](docs/workflow/agent-team/README.md)：维护一版宿主无关的角色职责契约（Leader、Designer、Builder、Reviewer），具体调度与执行实现交由各 Agent Harness 完成。
+- `docs/<分类>/<技能名>/README.md`：中文使用说明及已有语言包的资料索引。例如，[code-like-me 使用说明](docs/coding/code-like-me/README.md)介绍编码偏好的应用方式，开发场景与改动边界、通用流程、编码偏好、类型与领域建模、读者负担、实现决策的三问、适用规则读取、注释和完成判定集中在技能入口；异常与日志、数据与事务、缓存与并发、资源与性能（含量化结论的基线与波动）四份运行时资料、Java（含类型建模与 Javadoc）资料及具体代码形态示例由入口按任务直接选择；用户可按[实际场景验收流程](docs/coding/code-like-me/acceptance-workflow.md)选择场景、执行验证并记录 Agent 的实际表现。
+- [agent-team 使用说明](docs/workflow/agent-team/README.md)：开发任务的默认团队组织方式：维护一版宿主无关的角色职责契约（Leader、Designer、Builder、Reviewer），四种角色是基线而非上限，可按任务需要增派；具体调度与执行实现交由各 Agent Harness 完成。
 - [role-model-budget 使用说明](docs/workflow/role-model-budget/README.md)：按 small/medium/large 复杂度解析 Leader、Designer、Builder、Reviewer 的模型与思考强度，读取用户配置并在 Claude Code / Codex 能力内应用，缺失时使用内置默认；只输出预算表，不改变角色职责和调度。
-- [dev-workflow 使用说明](docs/workflow/dev-workflow/README.md)：按规模组织调研、规划、实现和核验；独立的 [progression.md](skills/zh-CN/workflow/dev-workflow/references/progression.md) 是推进规则来源，使用稳定编号描述条件和动作，供当前人工执行及后续小型规则引擎映射；缺陷修复、重构、功能、只读调查和性能的任务类型方法见 [playbooks.md](skills/zh-CN/workflow/dev-workflow/references/playbooks.md)；真实调用验收见[场景资料](docs/workflow/dev-workflow/acceptance.md)。
 - [restate-goal 使用说明](docs/workflow/restate-goal/README.md)：用自己的话复述用户的目标、要解决的问题和满足目标的最小改动，区分事实与推断，确认理解一致后再继续。
 - [commit-cleanup 使用说明](docs/git/commit-cleanup/README.md)：整理提交历史，拆分混合提交、合并碎片提交、重排顺序并补全信息，只改组织方式并校验树哈希。
 - [commit-organize 使用说明](docs/git/commit-organize/README.md)：把工作区未提交改动按变更单元分组提交，生成符合项目风格的提交信息，直接产出清晰历史；含缺陷修复时失败用例或复现证据先于修复提交。

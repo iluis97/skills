@@ -16,7 +16,7 @@
 
 ## 2. 现状判断
 
-核对依据包括现有技能入口、阶段契约、角色配置、编排协议、状态脚本、审查与测试规则，以及 [devflow-skill-optimization-proposal.md](../../../skills/zh-CN/_archive/dev-flow/devflow-skill-optimization-proposal.md)。该提案中的历史任务复盘作为设计输入，本次未重新运行历史任务。
+核对依据包括现有技能入口、阶段契约、角色配置、编排协议、状态脚本、审查与测试规则，以及历史提案 devflow-skill-optimization-proposal.md（未随归档保留）。该提案中的历史任务复盘作为设计输入，本次未重新运行历史任务。
 
 | 现状 | 造成的成本或缺口 | 本方案处理 |
 | --- | --- | --- |
